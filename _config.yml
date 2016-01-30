@@ -13,7 +13,7 @@ timezone: Asia/Shanghai
 
 # URL
 ## If your site is put in a subdirectory, set url as 'http://yoursite.com/child' and root as '/child/'
-url: http://yoursite.com
+url: http://whiledoing.github.io
 root: /
 permalink: :year/:month/:day/:title/
 permalink_defaults:
@@ -68,6 +68,7 @@ pagination_dir: page
 # theme: modernist
 # theme: landscape-plus
 theme: hexo-theme-yilia
+theme_repo: https://github.com/litten/hexo-theme-yilia
 
 # Deployment
 ## Docs: https://hexo.io/docs/deployment.html
