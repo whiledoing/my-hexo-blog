@@ -1,3 +1,3 @@
-[submodule "themes/hexo-theme-yilia"]
-	path = themes/hexo-theme-yilia
-	url = git@github.com:whiledoing/hexo-theme-yilia.git
+[submodule "themes/hexo-theme-yelee"]
+	path = themes/hexo-theme-yelee
+	url = https://github.com/whiledoing/hexo-theme-yelee.git
