@@ -1,20 +1,13 @@
 ---
 title:  self-git
-date: 2016/1/26 22:12:58
-updated: 2016/1/29 19:37:34
+date: 2016/1/31 22:16:46
 tags: [self,git]
+toc: true
 ---
 
 这个文档记录了自己学习和折腾`git`的内容。
 
 <!--more-->
-
----
-
-<!-- toc -->
-
----
-
 
 ## git submodule
 
@@ -24,14 +17,18 @@ git提供了一种更加简单的方式submodule的方式，将依赖的`git rep
 
 首先，需要加入别的submodule:
 
-``` bash test http://baidu.com link-test
+```bash
 # 将别的repo放到特定的目录中
 git submodule add git@xxx.repo submodule/lib-xxx
 ```
 
-加入成功之后，本地的状态是修改了`.gitmodule`和`submodule/lib-xxx`，前者表示了当前submodule所管理的所有模块的信息，后者表示**当前维护lib-xxx的commit指针变化了**。将两个修改提交之后，其它人在clone当前版本库时候，就知道了：**奥，当前我依赖了xxx库，同时我依赖库的head在某某commit上面**。
+加入成功之后，本地的状态是修改了`.gitmodule`和`submodule/lib-xxx`，前者表示了当前submodule所管理的所有模块的信息，后者表示**当前维护lib-xxx的commit指针变化了**。将两个修改提交之后，其它人在clone当前版本库时候，就知道了：**奥，当前我依赖了xxx
+
+ 1. 列表项
+库，同时我依赖库的head在某某commit上面**。
 
 其过程是：
+
 ```bash
 git clone has-submoudle-repo
 cd has-submodule-repo

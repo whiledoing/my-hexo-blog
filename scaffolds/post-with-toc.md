@@ -1,7 +1,6 @@
 ---
 title: {{ title }}
 date: {{ date }}
-tags: [self,learn-note]
+tags:
+toc: true
 ---
-
-<!-- more -->

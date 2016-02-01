@@ -3,17 +3,12 @@ title: the linux programming interface reading notes
 date: 2016/1/26 22:07:09
 updated: 2016/1/29 19:37:34
 tags: [self,learn-note]
+toc: true
 ---
 
 这是自己学习[the linux programming interface](http://book.douban.com/subject/4292217/)一书的读书笔记。
 
 <!--more-->
-
----
-
-<!-- toc -->
-
----
 
 ## chapter 58 - socket: TCP/IP 网络基础
 

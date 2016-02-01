@@ -1,23 +1,21 @@
 ---
 title:  self-mac
-date: 2016/1/21 13:32:15
-updated: 2016/1/26 22:18:06
 tags: [self,mac,osx]
+date: 2015/1/25 10:01:20
+toc: true
 ---
 
 本文档记录了自己**折腾**mac的相关记录。
 
 <!--more-->
 
----
-
-<!-- toc -->
-
----
-
 ## mac-soft
 
 ### iterm
+
+xxx
+
+dddd
 
 #### 默认启动特定的tmux session
 
@@ -31,6 +29,7 @@ tmux attach -t work || tmux new -s work
 ## misc
 
 ### 无法umount
+
 使用`sshfs`加载远程服务器目录进行开发，如果`ssh`重新连接，需要先将原来的mount卸载掉。但是经常有时候提示说，无法卸载，当前目录正忙，解决方法是[ref][1]:
 
 ```bash

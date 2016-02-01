@@ -1,8 +1,8 @@
 ---
 title:  hexo-blog
-date: 2016/1/30 21:13:33
-updated: 2016/1/31 00:21:39
+date: 2016/1/31 02:40:08
 tags: [blog,hexo]
+toc: true
 ---
 
 记录一下自己折腾[blog](http://whiledoing.github.io)的内容。
@@ -10,12 +10,6 @@ tags: [blog,hexo]
 blog使用的是静态blog框架[hexo](https://hexo.io/zh-cn/)
 
 <!--more-->
-
----
-
-<!-- toc -->
-
----
 
 ## hexo related
 
@@ -44,6 +38,10 @@ hexo内置了一些[Tag Plugins](https://hexo.io/zh-cn/docs/tag-plugins.html)可
 -%> Trim-mode ('newline slurp') tag, trims following newline
 
 favicon是从[这里](http://www.favicon-generator.org/)搜索得到，然后放入到`source/favicon.ico`文件中即可。
+
+footer加入了统计pv和uv的信息，使用的服务是[不蒜子](http://service.ibruce.info/)
+
+另加入了[font-awesome](https://fortawesome.github.io/Font-Awesome/)加载额外的图标。
 
 ## 插件
 
