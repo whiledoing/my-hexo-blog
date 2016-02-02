@@ -1,5 +1,5 @@
 ---
-title: 《the linux programming interface》阅读笔记
+title: 《the linux programming interface》学习笔记
 date: 2016/1/26 22:07:09
 tags: [self,learn-note,linux]
 toc: true
