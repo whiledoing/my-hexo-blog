@@ -5,11 +5,11 @@ toc: true
 date: 2016-02-01 20:08:14
 ---
 
-[「The Art of UNIX Programming」](http://book.douban.com/subject/5387401/)这本书确实是久仰已久，加之自己最近一直在看linux相关的书籍，所以就带着看了一下。
+[《The Art of UNIX Programming》](http://book.douban.com/subject/5387401/)这本书确实是久仰已久，加之自己最近一直在看linux相关的书籍，所以就带着看了一下。
 
-花了3个小时将书翻了一下，摘录一下比较好的内容。
+花了3个小时将书翻了一下，摘录一下比较好的内容。（其实本来是想着慢慢读的，但是读的时候发现，一来是很多东西自己在别的书中都有了解过（[The Pragmatic Programmer](http://book.douban.com/subject/1417047/), [Code Complete](http://book.douban.com/subject/1432042/)），二来是因为很多东西其实也相对比较旧的，也就没有细看了。）
 
-（其实本来是想着慢慢读的，但是读的时候发现，一来是很多东西其实自己在别的书中都有了解过（[The Pragmatic Programmer](http://book.douban.com/subject/1417047/), [Code Complete](http://book.douban.com/subject/1432042/)），二来是因为很多东西其实也是比较旧的，也就没有细看了）
+<!--more-->
 
 基本大多数最有价值的想法都在第一章（哲学）中进行了说明。
 

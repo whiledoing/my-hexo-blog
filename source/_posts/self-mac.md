@@ -1,7 +1,7 @@
 ---
 title:  mac折腾记录
 tags: [self,mac,osx]
-date: 2015/1/25 10:01:20
+date: 2016/1/25 10:01:20
 toc: true
 ---
 
