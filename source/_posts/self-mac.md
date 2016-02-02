@@ -13,10 +13,6 @@ toc: true
 
 ### iterm
 
-xxx
-
-dddd
-
 #### 默认启动特定的tmux session
 
 在iterm中可以设定启动的命令（profiles -> command -> send text as start)中设定:
@@ -30,7 +26,7 @@ tmux attach -t work || tmux new -s work
 
 ### 无法umount
 
-使用`sshfs`加载远程服务器目录进行开发，如果`ssh`重新连接，需要先将原来的mount卸载掉。但是经常有时候提示说，无法卸载，当前目录正忙，解决方法是[ref][1]:
+使用`sshfs`加载远程服务器目录进行开发，如果`ssh`重新连接，需要先将原来的mount卸载掉。但是经常有时候提示说，无法卸载，当前目录正忙，解决方法是[点击][http://apple.stackexchange.com/questions/104842/the-volume-cant-be-ejected-because-its-currently-in-use]:
 
 ```bash
 # 找到打开文件的进程，然后kill掉即可
@@ -40,5 +36,3 @@ sudo lsof | grep /xxx-busy-dir
 # 或者使用
 disutil unmount (force) /xxx-busy-dir
 ```
-
-  [1]: http://apple.stackexchange.com/questions/104842/the-volume-cant-be-ejected-because-its-currently-in-use
