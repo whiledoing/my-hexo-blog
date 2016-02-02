@@ -1,8 +1,7 @@
 ---
-title: the linux programming interface reading notes
+title: 《the linux programming interface》阅读笔记
 date: 2016/1/26 22:07:09
-updated: 2016/1/29 19:37:34
-tags: [self,learn-note]
+tags: [self,learn-note,linux]
 toc: true
 ---
 

@@ -1,7 +1,6 @@
 ---
 title:  yaml格式
 date: 2016/1/20 22:46:37
-updated: 2016/1/29 19:37:34
 tags: [misc]
 ---
 
