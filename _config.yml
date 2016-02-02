@@ -67,8 +67,8 @@ pagination_dir: page
 # theme: hexo-theme-next
 # theme: modernist
 # theme: landscape-plus
-#theme: hexo-theme-yilia
-theme: hexo-theme-yelee
+theme: hexo-theme-yilia
+# theme: hexo-theme-yelee
 theme_repo: https://github.com/litten/hexo-theme-yilia
 
 # Deployment

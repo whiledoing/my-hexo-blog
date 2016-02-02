@@ -1,7 +1,7 @@
 ---
 title:  hexo-blog
 date: 2016/1/31 02:40:08
-tags: [blog,hexo]
+tags: [self,blog,hexo]
 toc: true
 ---
 

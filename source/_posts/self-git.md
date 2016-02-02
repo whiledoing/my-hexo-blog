@@ -1,5 +1,5 @@
 ---
-title:  self-git
+title: git学习记录
 date: 2016/1/31 22:16:46
 tags: [self,git]
 toc: true
