@@ -9,11 +9,9 @@ toc: true
 
 <!--more-->
 
-## mac-soft
+## iterm
 
-### iterm
-
-#### 默认启动特定的tmux session
+### 默认启动特定的tmux session
 
 在iterm中可以设定启动的命令（profiles -> command -> send text as start)中设定:
 
