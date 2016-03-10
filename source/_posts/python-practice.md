@@ -1,5 +1,5 @@
 ---
-title: python-practice
+title: python学习 && 实践
 tags: [self,python]
 date: 2016-03-10 22:41:31
 ---

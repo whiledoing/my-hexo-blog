@@ -1,5 +1,5 @@
 ---
-title: the-pragmatic-programmer-learn-note.md
+title: 《The Pragmatic Programmer》学习笔记
 tags: [self,learn-note]
 toc: true
 date: 2016-02-03 14:47:32

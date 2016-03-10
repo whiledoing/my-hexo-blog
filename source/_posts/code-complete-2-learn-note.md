@@ -1,5 +1,5 @@
 ---
-title: 《code complete 2》学习笔记
+title: 《Code Complete 2》学习笔记
 tags: [self,learn-note,unix]
 toc: true
 date: 2016-02-02 19:07:12
