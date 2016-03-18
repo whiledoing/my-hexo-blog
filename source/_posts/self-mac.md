@@ -66,7 +66,7 @@ tmux中有很多非常好用的插件：
 
 在mac上可以通过「OS X's FSEvents API」监控一个文件夹下面文件系统的改变。
 
-所以这里找到一个[应用](https://github.com/ggreer/fsevents-tools)，可以监控mac下文件系统的改变，然后执行特定的命令。
+所以这里找到一个[应用](https://github.com/ggreer/fsevents-tools)，可以监控mac下文件系统的改变，然后执行特定的命令。（如果是在linux系统中可以[使用这个应用](https://github.com/drunomics/syncd)）
 
 目前我的一个应用方式是，在本地修改代码，但是运行代码在**实际开发环境的服务器**上面！同步代码当然使用强大的`rsync`了命令了。
 
@@ -93,3 +93,14 @@ ssh -p xxxx user@host 'bash -ic your-alias-here'
 
 上面脚本比较有意思的地方是使用`bash -ic`来[运行alias](http://stackoverflow.com/questions/1198378/ssh-command-execution-doesnt-consider-bashrc-bash-login-ssh-rc)，其中i参数表示使用interactive mode，这样才可以解析alias。c参数表示运行后面的命令，而不是文件。
 
+## pycharm
+
+一般自己开发喜欢在熟悉代码之后使用vim进行开发，但是在不熟悉代码或者需要进行代码浏览的时候，就会切换到IDE进行开发（因为看代码的tag跳转是在是方便的很）。
+
+pycharm绝对是python开发IDE中的战斗机，各种方便，而且还有免费的教育版本，实在是业界良心。
+
+### pycharm使用svn版本的问题
+
+pycharm中可以集成svn（git etc）版本管理系统，使用的时候注意（尤其是svn），会使用到错误的svn版本，导致不兼容的问题（原谅mac系统自带的svn总是很旧）。mac的svn使用brew进行管理，但是brew管理的svn并不会被pycharm所用到，所以需要在pycharm的配置中手动定义svn的地址，一般为`/usr/local/bin/svn`地址，之后才可以正确使用。
+
+还有一点提醒就是，svn的大版本之间不兼容的。比如你开发环境的svn服务器的svn使用1.7版本，但是你本地使用1.8版本就可能出现你可以checkout下来版本，但是不能提交（因为1.7不知道1.8搞了什么别的东西），然后会报错**This client is too old to work with working copy**。所以使用之前最好切换到相同的svn版本，使用brew管理的话，就很方便了，只用`brew switch svn 1.7`即可（brew其实是管理了多个版本，但是使用软连接的方式来控制实际用的版本，很nice）。
