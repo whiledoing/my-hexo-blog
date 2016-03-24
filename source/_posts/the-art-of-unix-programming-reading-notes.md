@@ -1,6 +1,6 @@
 ---
 title: 《The Art of UNIX Programming》学习笔记
-tags: [self,learn-note,unix]
+tags: [self,learn-note,unix/linux]
 toc: true
 date: 2016-02-01 20:08:14
 ---

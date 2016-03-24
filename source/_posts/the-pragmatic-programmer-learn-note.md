@@ -1,6 +1,6 @@
 ---
 title: 《The Pragmatic Programmer》学习笔记
-tags: [self,learn-note]
+tags: [self,learn-note,software-engineer]
 toc: true
 date: 2016-02-03 14:47:32
 ---

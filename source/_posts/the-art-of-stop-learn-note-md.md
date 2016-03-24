@@ -1,6 +1,6 @@
 ---
 title: 《止学》学习笔记
-tags: [self,learn-note]
+tags: [self,learn-note,life]
 toc: true
 date: 2016-02-03 16:53:32
 ---

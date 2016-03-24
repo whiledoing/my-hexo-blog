@@ -1,6 +1,6 @@
 ---
 title: 《怦然心动的人生整理魔法》学习笔记
-tags: [self, learn-note]
+tags: [self, learn-note, life]
 date: 2016-03-18 10:51:31
 ---
 
