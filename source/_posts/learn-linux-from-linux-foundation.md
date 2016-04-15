@@ -1,5 +1,5 @@
 ---
-title: linux-course-from-linux-foundation学习记录
+title: linux course from linux foundation 学习记录
 tags: [self,unix/linux]
 date: 2016-03-24 09:58:20
 toc: true

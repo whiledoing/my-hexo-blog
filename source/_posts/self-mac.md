@@ -104,3 +104,27 @@ pycharm绝对是python开发IDE中的战斗机，各种方便，而且还有免�
 pycharm中可以集成svn（git etc）版本管理系统，使用的时候注意（尤其是svn），会使用到错误的svn版本，导致不兼容的问题（原谅mac系统自带的svn总是很旧）。mac的svn使用brew进行管理，但是brew管理的svn并不会被pycharm所用到，所以需要在pycharm的配置中手动定义svn的地址，一般为`/usr/local/bin/svn`地址，之后才可以正确使用。
 
 还有一点提醒就是，svn的大版本之间不兼容的。比如你开发环境的svn服务器的svn使用1.7版本，但是你本地使用1.8版本就可能出现你可以checkout下来版本，但是不能提交（因为1.7不知道1.8搞了什么别的东西），然后会报错**This client is too old to work with working copy**。所以使用之前最好切换到相同的svn版本，使用brew管理的话，就很方便了，只用`brew switch svn 1.7`即可（brew其实是管理了多个版本，但是使用软连接的方式来控制实际用的版本，很nice）。
+
+## hammerspoon
+
+mac上窗口管理的神器。（功能完全不局限在窗口管理上面）
+
+最早的管理神器是[Slate](https://github.com/jigish/slate/wiki/Global-Configs)，该软件的设计实现就是可以通过配置的方式管理所有的窗口的操作，其中有一个非常好用的功能**hint**，类似于vim的**easymotion**插件，这个非常的nice。而且支持配置文件的方式也是非常的推荐。
+
+但是Slate已经很久不再更新了，所以继续根据上文tutorial博文的推荐找到了新的神器[HammerSpoon](https://github.com/Hammerspoon/hammerspoon)。这个项目其实很多思想类似于Slate，但是更加的强大。因为其本质操作方式就是定于了一个操作系统和lua解析配置（加逻辑运行代码）的解释器。我们可以直接写配置以及写代码来实现非常多的操作功能，非常的强大！
+
+然后就是各种的折腾了，折腾的配置主要参考了[别人的配置](https://github.com/songchenwen/dotfiles/tree/master/hammerspoon)。
+
+把玩了一下，列一下主要的使用特性：
+
+1. configurable.
+2. hint.
+3. hotkey.
+4. undo.
+5. split window mode。(神一样的功能，就是在当前窗口中进行split，然后调整是哪两个窗口进行split，还可以调整split窗口的大小。谁用谁知道。)
+
+附上参考文档：
+
+- [HammerSpoon tutorial](http://thume.ca/howto/2014/12/02/using-mjolnir-an-extensible-osx-window-manager/)
+- [Slate tutorial](http://thume.ca/howto/2012/11/19/using-slate/)
+- [国人写的HammerSpoon介绍](https://songchenwen.com/tech/2015/04/02/hammerspoon-mac-window-manager/)
