@@ -291,3 +291,24 @@ bg %1
 ```
 
 任务又会在后台运行，使用`kill %1`杀死该后台程序。
+
+## bash programming practice
+
+---
+
+编程的时候，有时候需要使用三元的运算符，比如幅值语句，根据当前的if条件判断是不是设置合理的数值。
+
+一种写法使用运算符求值的方式来得到应该返回的数值，比如：
+
+```bash ternary-operator-in-bash http://stackoverflow.com/questions/3953645/ternary-operator-in-bash
+# 通过echo将最终的数值通过运算符进行返回，等价于变为了直接的宏替换
+a=$([ "$b" == 5 ] && echo "$c" || echo "$d")
+```
+
+还有一种方式就是直接通过test测试，将幅值语句写两次，这样子反而好像更加的清晰直观()：
+
+```bash conditional-assignment-based-on-environment-variable http://stackoverflow.com/questions/10486263/compound-logical-tests-in-bash
+[[ "$MYAPP_ENV" = PROD ]] && a=1 || a=2
+```
+
+---

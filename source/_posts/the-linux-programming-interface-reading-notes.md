@@ -9,6 +9,75 @@ toc: true
 
 <!--more-->
 
+## chapter 4,5 - I/O模型
+
+UNIX系统设计最精华的地方在于，所有的I/O操作，都可以看成是一个「文件」，这些「文件」公用相同的访问，操作接口，这样子处理业务的逻辑就都可以「抽象成为I/O」的处理。
+
+几个元操作：
+
+1. open
+2. read
+3. write
+4. close
+5. lseek
+
+### 文件描述符和打开文件之间的关系
+
+内核维护了3个数据结构：
+
+1. 进程级别的文件描述符表(open file descriptor)
+2. 系统级别的打开文件表(open file table)，其中的条目叫做(open file handler)
+3. 文件系统的i-node表
+
+通过`open`接口得到的整数叫做**文件描述符**，是一个int整数，只是一个占位符用来定位到具体的一个「文件句柄(open file handler)」的指针。
+
+一个文件句柄中主要记录了：
+
+1. 文件的偏移量。
+2. 文件的访问模式，状态
+3. 与信号驱动I/O相关的设定
+4. i-node对象的引用。
+
+而实际的文件对象记录再i-node结构中，其中主要记录文件的类型，权限，等等。
+
+所以实际上，是一个三维的索引结构：「文件描述符 -> 文件句柄 -> i-node」
+
+如果不同的文件描述符（甚至不同进程上）指向相同的文件句柄，那么其实所有操作共享。
+
+如果不同的文件句柄，实际是同一个i-node，那么实际操作是同一个文件，但是可能存在不同的文件偏移和状态，所以可能导致竞态的访问。
+
+### dup操作
+
+shell的重定向就使用dup操作，dup的操作就是：「拷贝一个文件描述符对应的句柄到另一个文件描述符上」
+
+其接口格式是：
+
+```C
+// 得到新的new_fd，和old_fd公用相同文件句柄
+new_fd = dup(old_fd)
+```
+
+还有一个格式是dup2
+
+```C
+// 将new_fd作为参数指定，那么创建成功得到新的描述符就是new_fd，就是将特定的文件描述符中的句柄替换了
+new_fd = dup2(old_fd, new_fd)
+```
+
+所以将`2&>1`实现代码就是`dup2(1, 2)`
+
+系统级别提供了`/dev/stdin(stdout/stderr)`用来表示虚拟的文件，打开之后得到就是标准I/O的文件。一些程序中只可以从文件名中得到文件，而不是标准输入（可以使用流），这样子就可以解决这个问题：
+
+```bash
+ls | diff /dev/stdin oldfilelist
+```
+
+有的程序使用`-`表示标准输入输出（根据使用情况定），那么可以写成：
+
+```bash
+ls | diff - oldfilelist
+```
+
 ## chapter 58 - socket: TCP/IP 网络基础
 
 地址解析协议（ARP）用来将IP地址映射到MAC地址。
@@ -135,9 +204,7 @@ TCP使用**状态机**的方式来维护状态。
 
 连接的情况参考书中的截图：
 
-<center>
-![Screen Shot 2016-01-19 at 10.30.04 PM.png-220.3kB][1]
-</center>
+![test][1]
 
 其中三次握手的流程是：
 
@@ -149,9 +216,7 @@ TCP使用**状态机**的方式来维护状态。
 
 另外一个主要的操作是：关闭连接
 
-<center>
 ![Screen Shot 2016-01-19 at 10.29.27 PM.png-214.6kB][2]
-</center>
 
 对应的操作是：
 
@@ -228,7 +293,7 @@ netstat -alnp --tcp | grep python
     - POLLHUP 出现挂断
     - POLLERR 出现错误
 
-实现层面，两者在linux的实现上都叼能用了`poll`本身（一个实现体，其实只是接口设计层面的区别）
+实现层面，两者在linux的实现上都使用了`poll`本身（一个实现体，其实只是接口设计层面的区别）
 
 两者都存在性能问题：
 
@@ -264,7 +329,6 @@ if(epoll_ctl(epfd, EPOLL_CTL_ADD, fd, ev) == -1)
 1. 维护一个需要执行I/O的优先级队列。
 2. 队列中的任务可以进行轮转调度，且加入超时机制。
 3. 队列中任务处理完成之后（比如出现EAGAIN或者EWOULDBLOCK错误码之后），从队列中删除。
-
 
   [1]: http://static.zybuluo.com/whiledoing/jmxuf3m6ucbw73ur278hbyff/Screen%20Shot%202016-01-19%20at%2010.30.04%20PM.png
   [2]: http://static.zybuluo.com/whiledoing/hr3ulnfsqr7jppze8o6zibgk/Screen%20Shot%202016-01-19%20at%2010.29.27%20PM.png
