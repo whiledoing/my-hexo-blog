@@ -28,14 +28,15 @@ hexo内置了一些[Tag Plugins](https://hexo.io/zh-cn/docs/tag-plugins.html)可
 
 该主题中使用的模板语言是[ejs](http://ejs.co/)。`ejs`的全称就是`effective javascript templating`，在其中可以直接**内嵌js的代码**，这样子可加入非常多的逻辑语义，再进行`render`得到最终的页面。
 
-> ejs tags
-<% 'Scriptlet' tag, for control-flow, no output
-<%= Outputs the value into the template (HTML escaped)
-<%- Outputs the unescaped value into the template
-<%# Comment tag, no execution, no output
-<%% Outputs a literal '<%'
-%> Plain ending tag
--%> Trim-mode ('newline slurp') tag, trims following newline
+ejs tags的语法说明：
+
+- <% 'Scriptlet' tag, for control-flow, no output
+- <%= Outputs the value into the template (HTML escaped)
+- <%- Outputs the unescaped value into the template
+- <%# Comment tag, no execution, no output
+- <%% Outputs a literal '<%'
+- %> Plain ending tag
+- -%> Trim-mode ('newline slurp') tag, trims following newline
 
 favicon是从[这里](http://www.favicon-generator.org/)搜索得到，然后放入到`source/favicon.ico`文件中即可。
 

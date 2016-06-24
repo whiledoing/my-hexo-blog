@@ -34,7 +34,7 @@ iterm可以直接配置快捷键对应的hex code，这对于tmux而言实在是
 
 ### 无法umount
 
-使用`sshfs`加载远程服务器目录进行开发，如果`ssh`重新连接，需要先将原来的mount卸载掉。但是经常有时候提示说，无法卸载，当前目录正忙，解决方法是[点击][http://apple.stackexchange.com/questions/104842/the-volume-cant-be-ejected-because-its-currently-in-use]:
+使用`sshfs`加载远程服务器目录进行开发，如果`ssh`重新连接，需要先将原来的mount卸载掉。但是经常有时候提示说，无法卸载，当前目录正忙，解决方法是[点击](http://apple.stackexchange.com/questions/104842/the-volume-cant-be-ejected-because-its-currently-in-use):
 
 ```bash
 # 找到打开文件的进程，然后kill掉即可

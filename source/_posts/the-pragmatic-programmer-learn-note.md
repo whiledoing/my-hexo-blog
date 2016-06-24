@@ -34,11 +34,11 @@ date: 2016-02-03 14:47:32
 *   think about your work
 
 *   provide options, don't make lame execuses
- 
+
     要提供选择，而不是找借口。不要说事情做不到，而是说明你能够做什么。
  
 *   don't live with broken windows
- 
+
 *   it's both important what you say and the way you say
  
 *   DRY: don't repeat yourself
