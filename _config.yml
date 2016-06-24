@@ -67,9 +67,9 @@ pagination_dir: page
 # theme: hexo-theme-next
 # theme: modernist
 # theme: landscape-plus
-theme: hexo-theme-yilia
-# theme: hexo-theme-yelee
-theme_repo: https://github.com/litten/hexo-theme-yilia
+# theme: hexo-theme-yilia
+theme: hexo-theme-yelee
+theme_repo: https://github.com/MOxFIVE/hexo-theme-yelee
 
 # Deployment
 ## Docs: https://hexo.io/docs/deployment.html
@@ -77,3 +77,36 @@ deploy:
   type: git
   repo: https://github.com/whiledoing/whiledoing.github.io.git
   branch: master
+
+marked:
+  gfm: true
+  pedantic: false
+  sanitize: false
+  tables: true
+  breaks: true
+  smartLists: true
+  smartypants: true
+
+markdown:
+  render:
+    html: true
+    xhtmlOut: false
+    breaks: false
+    linkify: true
+    typographer: true
+    quotes: '“”‘’'
+  plugins:
+    - markdown-it-abbr
+    - markdown-it-footnote
+    - markdown-it-ins
+    - markdown-it-mark
+    - markdown-it-sub
+    - markdown-it-sup
+    - markdown-it-emoji
+    - markdown-it-highlightjs
+  anchors:
+    level: 2
+    collisionSuffix: 'v'
+    permalink: false
+    permalinkClass: header-anchor
+    permalinkSymbol: ¶
