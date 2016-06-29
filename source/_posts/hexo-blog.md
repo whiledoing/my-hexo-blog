@@ -25,7 +25,6 @@ hexo内置了一些[Tag Plugins](https://hexo.io/zh-cn/docs/tag-plugins.html)可
 
 ## 主题
 
-
 该主题中使用的模板语言是[ejs](http://ejs.co/)。`ejs`的全称就是`effective javascript templating`，在其中可以直接**内嵌js的代码**，这样子可加入非常多的逻辑语义，再进行`render`得到最终的页面。
 
 ejs tags的语法说明：
@@ -70,3 +69,53 @@ hexo.extend.filter.register('after_post_render', function(data) {
 > 漢學家稱這個空白字元為「盤古之白」，因為它劈開了全形字和半形字之間的混沌。另有研究顯示，打字的時候不喜歡在中文和英文之間加空格的人，感情路都走得很辛苦，有七成的比例會在 34 歲的時候跟自己不愛的人結婚，而其餘三成的人最後只能把遺產留給自己的貓。畢竟愛情跟書寫都需要適時地留白。
 
 > 與大家共勉之。
+
+### 加入mermaid的支持
+
+[mermaid](http://knsv.github.io/mermaid/#using-the-mermaid_config)是一个类似生成图标的标记语言，可以生产常用的序列图，时序图等等，对于blog而言，有时候想用简单的图表表示概念非常的方便。
+
+首先需要加入mermaid的运行代码：
+
+```html
+<!--add mermaid support [link](http://knsv.github.io/mermaid/#mermaid)-->
+<script src="<%-config.root%>js/mermaid-6.0.0.min.js"></script>
+<script>mermaid.initialize({startOnLoad:true});</script>
+<link rel="stylesheet" href="<%-config.root%>css/raw_css/mermaid-6.0.0.css">
+```
+
+然后定义一下hexo的新的mermaid的tag，参考[文档](https://hexo.io/api/tag.html)，添加代码：
+
+```js
+hexo.extend.tag.register('mermaid', function(args, content){
+    var mermaid_part = '<div class="mermaid">' + content + '</div>';
+
+    // first para for config, if is center, then center pic
+    var config = args.shift();
+    if(config == 'center') {
+        mermaid_part = '<center>' + mermaid_part + '</center>';
+    }
+
+    return mermaid_part;
+}, {async: true, ends: true});
+```
+
+就可用代码 `{% raw %} {% mermaid center %} graph TD; A-->B; {% endmermaid %} {% endraw %}` 生成序列图：
+
+{% mermaid center %} graph TD; A-->B; {% endmermaid %}
+
+{% mermaid center %} 
+graph LR;
+subgraph one
+a1-->a2
+end
+subgraph two
+b1---b2
+b2-.->b3
+end
+subgraph three
+c1((big round fa:fa-twitter))-->c2
+end
+a1-->c1
+classDef default fill:#f9f,stroke:#333,stroke-width:4px;
+
+{% endmermaid %}

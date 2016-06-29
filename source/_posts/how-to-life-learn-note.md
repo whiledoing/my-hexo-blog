@@ -1,7 +1,8 @@
-layout: learn-notew-with-toc
+layout: learn-note-with-toc
 title: 《活法》读书笔记
 date: 2016-04-01 17:16:09
-tags: [self,learn-note]
+tags: [self,learn-note,life]
+toc: true
 ---
 
 [《活法》](https://book.douban.com/subject/1269900/)是日本稻盛和夫老先生写的关于人生为什么活着，应该怎样活着的一本书。书中很多道理和思想值得大家一辈子去学习和体会。人生就是一场修行，苦行僧的修行。
