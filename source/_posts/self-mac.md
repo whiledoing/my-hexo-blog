@@ -45,14 +45,22 @@ sudo lsof | grep /xxx-busy-dir
 disutil unmount (force) /xxx-busy-dir
 ```
 
-## tmux
+### 尝试使用`Caps Lock`作为新的切换输入法的快捷键
 
-tmux绝对是开发人员的神器，尤其是我这种需要连接很多服务器进行开发的来说，使用tmux绝对是神之利器。
+之前一直都是使用`Shift`作为切换中英输入的快捷键，好处当然就是使用方便，坏处很多的炒作快捷键都需要`Shift`进行配合，如果不小心，就会导致配合的快捷键切换了中英状态非常蛋疼。
+
+所以根据[网上建议](https://www.zhihu.com/question/19611143)使用`Caps Lock`作为新的切换方式，因为我**重来就不用大写按键**，直接将大写按键改为了`Ctrl`来使用。更好的是，我们的`Sierra`更新之后，直接可以使用[这个功能](http://newping.cn/9452)，perfect！
+
+为了方便使用，我将右边的command键位修成了大写（[使用了软件Karabiner-Elements](https://github.com/tekezo/Karabiner-Elements)进行修改，这样子我每次切换输入法只需要使用右边的大拇指轻轻的点击一下即可，效果非常nice。
+
+# tmux
+    
+mux绝对是开发人员的神器，尤其是我这种需要连接很多服务器进行开发的来说，使用tmux绝对是神之利器。
 
 tmux中有很多非常好用的插件：
-
-1. [tmux-yank](https://github.com/tmux-plugins/tmux-yank)，方便的拷贝当前的命令和工作目录，使用`prefix + y/Y'的方式
-2. [tmux-open](https://github.com/tmux-plugins/tmux-open)，是不是经常说看到tmux的缓冲区的文件或者目录可以打开，在缓冲区模式中，使用`o/ctrl+o`的方式，可以方便的打开，或者调用**$EDITOR进行编辑**
+ 
+ 1. [tmux-yank](https://github.com/tmux-plugins/tmux-yank)，方便的拷贝当前的命令和工作目录，使用`prefix + y/Y'的方式
+ 2. [tmux-open](https://github.com/tmux-plugins/tmux-open)，是不是经常说看到tmux的缓冲区的文件或者目录可以打开，在缓冲区模式中，使用`o/ctrl+o`的方式，可以方便的打开，或者调用**$EDITOR进行编辑**
 
 在vim中操作tmux的[plugin](https://github.com/benmills/vimux)，非常有用的插件。
 
