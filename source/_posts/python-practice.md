@@ -1,5 +1,5 @@
 ---
-title: python学习 && 实践
+title: python misc
 tags: [self,python]
 date: 2016-03-10 22:41:31
 toc: true
@@ -533,10 +533,77 @@ def wraps(wrapped,
                    assigned=assigned, updated=updated)
 ```
 
+### metaclass
+
+1. 如果说类是object-factory的话，那么元类就是class-factory
+2. metaclass的话构造出来的是一个对象，所以metaclass中的所有方法都可以任务是class-object的类方法。
+3. 原来可以控制类的构造，如果需要对类生成的过程，成员函数进行控制。
+
+```python
+class Meta(type):
+    def __call__(self):
+        print 'Enter Meta.__call__: ', self
+        obj = type.__call__(self)
+        print 'Exit Meta.__call__: ', obj
+        return obj
+
+    def __new__(metacls, name, bases, dictionary):
+        print 'Enter Meta.__new__:', metacls, name, bases, dictionary
+        newClass = type.__new__(metacls, name, bases, dictionary)
+        print 'Exit Meta.__new__: ', newClass
+        return newClass
+
+    def __init__(cls, name, bases, dictionary):
+        print 'Enter Meta.__init__: ', cls, name, bases, dictionary
+        super(Meta, cls).__init__(name, bases, dictionary)
+        print 'Exit Meta.__init__'
+
+class A(object):
+    __metaclass__ = Meta
+print 'Create instance of class A'
+A()
+
+# Create class A
+# Enter Meta.__new__: <class '__main__.Meta'> A (<type 'object'>,) {}
+# Exit Meta.__new__:  <class '__main__.A'>
+# Enter Meta.__init__:  <class '__main__.A'> A (<type 'object'>,) {}
+# Exit Meta.__init__
+# Create instance of class A
+# Enter Meta.__call__:  <class '__main__.A'>
+# Exit Meta.__call__:  <__main__.A object at 0xb76a9ccc>
+```
+
+上面的代码有几个可以说明的地方：
+
+1. 类也是一个**对象**，类这个对象构造的实际是类定义结束的时候
+2. python定义类对象的时候，是看下当前是否有定义`__metaclass__`，如果有的话，使用该元类构造类（如果没有，找父类，还是没有，找当前moudle），如果没有，使用默认的元类`type`
+3. 别的过程就对照起来了，`__new__`方法是一个类方法，第一个参数是类本身，用来构造一个类对象，而`__init__`方法是在生成了对象之后进行初始化，所以第一个对象是cls（也就是类自己）
+4. 元类的其他方法，可以看成是成员方法，而成员就是构造出来的对象，也就是**类对象本身**，所以hook了`__call__`方法，就是hook了构造类成员的构造方法。
+
+ORM的实现可能就需要使用metaclass，因为ORM需要根据当前类中的类变量定义知道当前类操作数据的格式要求，使用metaclass就可以将该格式要求转变为有效的后续操作。
+
+几个参考文章
+
+- [示例来源文章](http://xiaocong.github.io/blog/2012/06/12/python-metaclass/)
+- [实现ORM](http://www.liaoxuefeng.com/wiki/001374738125095c955c1e6d8bb493182103fac9270762a000/001386820064557c69858840b4c48d2b8411bc2ea9099ba00)
+- [stackoverflow上的回答](http://blog.jobbole.com/21351/)
+
+### pythonic way
+
+#### list的dict，按照dict的特定subkey进行排序
+
+```python
+>>> a=[{'a':1}, {'a':0}]
+>>> import operator
+
+# 其中sort时候的key表示每一个item按照什么key进行比较，itemgetter刚好将subkey的字段取出来
+>>> a.sort(key=operator.itemgetter('a'))
+```
+
 ---
 
 参考文档：
 
-1.  [python-functools-doc](https://docs.python.org/2/library/functools.html)
-2.  [segmentfault-blog](https://segmentfault.com/a/1190000000599084)
-3.  [stackoverflow-what-does-functools.wrap-do](http://stackoverflow.com/questions/308999/what-does-functools-wraps-do)
+- [python-functools-doc](https://docs.python.org/2/library/functools.html)
+- [segmentfault-blog](https://segmentfault.com/a/1190000000599084)
+- [stackoverflow-what-does-functools.wrap-do](http://stackoverflow.com/questions/308999/what-does-functools-wraps-do)
