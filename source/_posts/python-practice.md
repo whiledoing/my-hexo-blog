@@ -452,8 +452,50 @@ log是有层级关系的，最上层的log就是root，这是一个logging模块
 `debug_level`有几个维度的定义方式：
 
 1.  log层级，如果不符合log层级的log不会输出。
-2.  父log层级，如果自己没有定义log层级，那么会使用父类的，依次找上去，直到root的level。
+2.  父log层级，如果自己没有定义log层级，那么会使用父类的，依次找上去，直到root的level。名字上面叫做`getEffectiveLevel`，表示得到有效的level信息，也就是一直沿着继承结构向上直到找到为止。
 3.  handler层级，如果log层级符合，还需要符合handler层级，才会输出到handler中。比如log层级是info，所有info数据都会进入log后续系统，但是一个handler的层级（比如需要输出所有的错误信息到文件），那么就将handler的级别设置error，这样子info的数据都会输出，但是能到文件中的只有error级别数据。
+
+filter的概念就比较清晰了，就是过滤当前的信息，可以加入到logger中，也可以放入到handler中。如果加入到logger中，那么所有从logger输出的log都需要经过filter，而handler就只针对进入到handler的log了。
+
+python的logging模块有层级结构, 层级结构继承了父类的logLevel和handler, 具体是:
+
+1. 如果子类没有设置对应的logLevel, 那么得到父类的logLevel
+2. log输出的时候, 会先看下自己的level是否符合, 如果不符合什么都不干.
+3. 然后遍历所有的handler, 这包括自己的和**父类**的handler
+4. handler处理过程中会看下handler自己的logLevel是否符合(而不是看节点的, 如果不设置, 默认的话, 是NOTSET, 就是0)
+
+但是filter机制是不继承的, 也就是说, filter机制和**比较level**的逻辑是一致的, 都是发送消息的时候:
+
+1. 先看下自己的filter, 如果有, 就过滤, 然后才会到handler
+2. 如果自己没有filter, **不会到父类中找父类的filter**
+3. 父类的filter也只会用在check父类自己的log输出
+4. 但是handler的filter会用来handler自己的输出检测中, 也就是可以子类和父类公用(因为都会访问到这个handler)
+
+出了手动配置logger的方式, 还可以通过配置文件, 或者是配置dict, 比如下面的代码使用dict进行配置
+
+```python
+import logging
+from logging.config import dictConfig
+
+# 使用配置进行初始化, 所有的相关引用都是使用字段的key标识
+logging_config = dict(
+	version = 1,
+	formatters = {
+		'f': {'format': '%(asctime)s %(name)s %(levelname)-8s %(message)s'}
+	},
+	handlers = {
+		'h': {'class': 'logging.StreamHandler', 'formatter': 'f', 'level': logging.DEBUG}
+	},
+	root = {'handlers': ['h'], 'level': logging.DEBUG},
+	loggers = dict(
+		error_log = { 'level': logging.ERROR }
+	)
+)
+
+dictConfig(logging_config)
+logger.debug('often makes a very good meal of %s', 'visiting tourists')
+logging.getLogger('error_log').error('this is test log')
+```
 
 ---
 
@@ -461,6 +503,8 @@ log是有层级关系的，最上层的log就是root，这是一个logging模块
 
 1.  [一个比较好的说明log的文章](https://app.yinxiang.com/shard/s61/nl/2147483647/fd86874d-ae64-4f20-bc8f-c45b76f87125/)
 2.  [python-motw-logger](https://pymotw.com/2/logging/index.html)
+3.  [python-logging-prograte](http://www.saltycrane.com/blog/2014/02/python-logging-filters-do-not-propagate-like-handlers-and-levels-do/)
+4.  [python-logging-config](http://docs.python-guide.org/en/latest/writing/logging/#logging-in-an-application)
 
 ### python functools wraps
 

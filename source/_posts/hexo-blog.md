@@ -64,6 +64,13 @@ hexo.extend.filter.register('after_post_render', function(data) {
 });
 ```
 
+不知道为什么上面的方式没有办法生效了, 所以改为使用html嵌入的方式进行处理:
+
+```html
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pangu/3.2.1/pangu.min.js"></script>
+<script>pangu.spacingPage();</script>
+```
+
 比较有意思的是作者的一段说明文字：
 
 > 漢學家稱這個空白字元為「盤古之白」，因為它劈開了全形字和半形字之間的混沌。另有研究顯示，打字的時候不喜歡在中文和英文之間加空格的人，感情路都走得很辛苦，有七成的比例會在 34 歲的時候跟自己不愛的人結婚，而其餘三成的人最後只能把遺產留給自己的貓。畢竟愛情跟書寫都需要適時地留白。
