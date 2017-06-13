@@ -577,6 +577,14 @@ def wraps(wrapped,
                    assigned=assigned, updated=updated)
 ```
 
+---
+
+参考文档：
+
+- [python-functools-doc](https://docs.python.org/2/library/functools.html)
+- [segmentfault-blog](https://segmentfault.com/a/1190000000599084)
+- [stackoverflow-what-does-functools.wrap-do](http://stackoverflow.com/questions/308999/what-does-functools-wraps-do)
+
 ### metaclass
 
 1. 如果说类是object-factory的话，那么元类就是class-factory
@@ -644,10 +652,225 @@ ORM的实现可能就需要使用metaclass，因为ORM需要根据当前类中�
 >>> a.sort(key=operator.itemgetter('a'))
 ```
 
+#### dict的key按照value进行排序
+
+```python
+>>> d={'a': 2, 'b': 1}
+>>> sorted(d, key=d.get)
+```
+
+首先需要考虑，返回的结果是什么，这里是需要得到dict的key的排序，所以将d放到第一个参数，表示迭代器的源头。然后分析一下，如何如何进行比较，这里的方式使用key将比较的参数进行转化为对应的value进行比较。
+所以实际上sorted的比较过程是将两个元素用key进行转换，然后再用cmp进行比较得到结果。
+
+```python
+cmp(key(element_a), key(elemenet_b))
+```
+
+### python collections
+
+python的collections即可库中有几个有意思和使用的库。这里大概介绍一下
+
+#### defaultdict
+
+传入一个callable的对象作为工厂方法，当属性不存在的时候，使用工厂函数产生的对象作为默认的数值。
+
+比如我需要一个dict的value是list记录相关的数据:
+
+```python
+from collections import defaultdict
+word_line_counter = defaultdict(list)
+
+# not need to check existence
+for line, word in enumerate(some_source):
+    word_line_counter[line].append(word)
+```
+
+#### namedtuple
+
+namedtuple如同名字一样，就是tuple变成可通过dot.attr_name方式进行访问的结构。正常的tuple只能通过索引进行访问，但是如果tuple的数据比较长，索引的方式不直观。当然另外一种方式使用结构体，就是自己定义class，但是python的实现是每一个class结构体都有一个__dict__对象，not memory friendly。所以结合tuple内存高效和存储方便的特性，引入了nametuple类。
+
+其实现原理是产生nametuple对象的时候（其实返回的是一个类对象，只是使用tuple基类和提供扩展接口）构造了一个类，使用模板的方式动态生成:
+
+```python
+_class_template = '''\
+class {typename}(tuple):
+    '{typename}({arg_list})'
+
+    __slots__ = ()
+
+    _fields = {field_names!r}
+
+    def __new__(_cls, {arg_list}):
+        'Create new instance of {typename}({arg_list})'
+        return _tuple.__new__(_cls, ({arg_list}))
+
+    @classmethod
+    def _make(cls, iterable, new=tuple.__new__, len=len):
+        'Make a new {typename} object from a sequence or iterable'
+        result = new(cls, iterable)
+        if len(result) != {num_fields:d}:
+            raise TypeError('Expected {num_fields:d} arguments, got %d' % len(result))
+        return result
+
+    def __repr__(self):
+        'Return a nicely formatted representation string'
+        return '{typename}({repr_fmt})' % self
+
+    def _asdict(self):
+        'Return a new OrderedDict which maps field names to their values'
+        return OrderedDict(zip(self._fields, self))
+
+    def _replace(_self, **kwds):
+        'Return a new {typename} object replacing specified fields with new values'
+        result = _self._make(map(kwds.pop, {field_names!r}, _self))
+        if kwds:
+            raise ValueError('Got unexpected field names: %r' % kwds.keys())
+        return result
+
+    def __getnewargs__(self):
+        'Return self as a plain tuple.  Used by copy and pickle.'
+        return tuple(self)
+
+    __dict__ = _property(_asdict)
+
+    def __getstate__(self):
+        'Exclude the OrderedDict from pickling'
+        pass
+
+{field_defs}
+'''
+
+# Fill-in the class template
+class_definition = _class_template.format(
+    typename = typename,
+    field_names = tuple(field_names),
+    num_fields = len(field_names),
+    arg_list = repr(tuple(field_names)).replace("'", "")[1:-1],
+    repr_fmt = ', '.join(_repr_template.format(name=name)
+                         for name in field_names),
+    field_defs = '\n'.join(_field_template.format(index=index, name=name)
+                           for index, name in enumerate(field_names))
+)
+if verbose:
+    print class_definition
+
+# Execute the template string in a temporary namespace and support
+# tracing utilities by setting a value for frame.f_globals['__name__']
+namespace = dict(_itemgetter=_itemgetter, __name__='namedtuple_%s' % typename,
+                 OrderedDict=OrderedDict, _property=property, _tuple=tuple)
+try:
+    exec class_definition in namespace
+except SyntaxError as e:
+    raise SyntaxError(e.message + ':\n' + class_definition)
+result = namespace[typename]
+```
+
+我们通过代码生成一个Point对象的时候，就是动态的生成了一个内存优化的tuple，同时提供访问接口:
+
+```python
+>>> Point = namedtuple('Point', ['x', 'y'])
+>>> p = Point(11, y=22)        
+>>> p[0] + p[1]                     # indexable like a plain tuple
+33
+>>> x, y = p                        # unpack like a regular tuple
+>>> x, y
+(11, 22)
+>>> p.x + p.y                       # fields also accessable by name
+33
+>>> d = p._asdict()                 # convert to a dictionary
+```
+
+不过namedtuple的实现方式基于tuple，创建出来之后是**immutable**的。如果我们希望是mutable的，可以使用基于**__slots**的实现方式，就是构造一个普通的对象类，利用**__slots__的方式提高内存使用效率**. 这里别人已经实现类似接口的**namedlist**以及基于CPython实现的**recordclass**, 这里比较推荐使用**namedlist**库，基于python实现，简单高效。
+
 ---
 
 参考文档：
 
-- [python-functools-doc](https://docs.python.org/2/library/functools.html)
-- [segmentfault-blog](https://segmentfault.com/a/1190000000599084)
-- [stackoverflow-what-does-functools.wrap-do](http://stackoverflow.com/questions/308999/what-does-functools-wraps-do)
+- [why-use-namedtuple](https://dbader.org/blog/writing-clean-python-with-namedtuples)
+- [mutable-namedtuple-version-implementation-from-C](http://nbviewer.jupyter.org/urls/bitbucket.org/intellimath/recordclass/raw/default/examples/what_is_recordclass.ipynb)
+- [namelist-python-index](https://pypi.python.org/pypi/namedlist)
+- [about-python-slots](https://stackoverflow.com/questions/472000/usage-of-slots)
+
+#### OrderDict
+
+这个使用就广了，经常有需求是一方面使用dict的O(1)操作功能，一方面又有list的顺序记录功能。
+
+仔细一想，如需实现，有一个list记录当前dict的所有key的传入顺序，同时删除时候，去掉对应key。系统实现的方式是：完全使用空间换时间，实现方式：
+
+1. 一个double-linked-list用来记录当前插入key信息
+2. 一个额外dict来记录对应key在list中位置，这样子删除的时候，可以O(1)找到对应list节点，进而执行删除操作。
+
+贴一下python的实现，使用list作为可变节点的存储结构（虽然不够高效，但是也是比较简单的struct实现），使用**sentinel的方式来简化算法的实现复杂程度**
+
+```python
+class OrderedDict(dict):
+    'Dictionary that remembers insertion order'
+    # An inherited dict maps keys to values.
+    # The inherited dict provides __getitem__, __len__, __contains__, and get.
+    # The remaining methods are order-aware.
+    # Big-O running times for all methods are the same as regular dictionaries.
+
+    # The internal self.__map dict maps keys to links in a doubly linked list.
+    # The circular doubly linked list starts and ends with a sentinel element.
+    # The sentinel element never gets deleted (this simplifies the algorithm).
+    # Each link is stored as a list of length three:  [PREV, NEXT, KEY].
+    def __init__(*args, **kwds):
+        '''Initialize an ordered dictionary.  The signature is the same as
+        regular dictionaries, but keyword arguments are not recommended because
+        their insertion order is arbitrary.
+
+        '''
+        if not args:
+            raise TypeError("descriptor '__init__' of 'OrderedDict' object "
+                            "needs an argument")
+        self = args[0]
+        args = args[1:]
+        if len(args) > 1:
+            raise TypeError('expected at most 1 arguments, got %d' % len(args))
+        try:
+            self.__root
+        except AttributeError:
+            self.__root = root = []                     # sentinel node
+            root[:] = [root, root, None]
+            self.__map = {}
+        self.__update(*args, **kwds)
+
+    def __setitem__(self, key, value, dict_setitem=dict.__setitem__):
+        'od.__setitem__(i, y) <==> od[i]=y'
+        # Setting a new item creates a new link at the end of the linked list,
+        # and the inherited dictionary is updated with the new key/value pair.
+        if key not in self:
+            root = self.__root
+            last = root[0]
+
+            # 这里非常的cool，使用sentinel的方式极大的提高了实现简单程度
+            last[1] = root[0] = self.__map[key] = [last, root, key]
+        return dict_setitem(self, key, value)
+
+    def __delitem__(self, key, dict_delitem=dict.__delitem__):
+        'od.__delitem__(y) <==> del od[y]'
+        # Deleting an existing item uses self.__map to find the link which gets
+        # removed by updating the links in the predecessor and successor nodes.
+        dict_delitem(self, key)
+        link_prev, link_next, _ = self.__map.pop(key)
+        link_prev[1] = link_next                        # update link_prev[NEXT]
+        link_next[0] = link_prev                        # update link_next[PREV]
+
+    def __iter__(self):
+        'od.__iter__() <==> iter(od)'
+        # Traverse the linked list in order.
+        root = self.__root
+        curr = root[1]                                  # start at the first node
+        while curr is not root:
+            yield curr[2]                               # yield the curr[KEY]
+            curr = curr[1]                              # move to next node
+
+    def __reversed__(self):
+        'od.__reversed__() <==> reversed(od)'
+        # Traverse the linked list in reverse order.
+        root = self.__root
+        curr = root[0]                                  # start at the last node
+        while curr is not root:
+            yield curr[2]                               # yield the curr[KEY]
+            curr = curr[0]                              # move to previous node
+```
