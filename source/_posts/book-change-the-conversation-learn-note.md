@@ -1,6 +1,6 @@
 ---
 title: 《解决冲突的关键技巧》读书笔记
-tags: [self, learn-note, life, self-improvement]
+tags: [自写,读书笔记,心理学]
 date: 2016-08-07 17:07:05
 toc: true
 ---

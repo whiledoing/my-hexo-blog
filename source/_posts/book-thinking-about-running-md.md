@@ -1,10 +1,6 @@
 ---
-title: 《当我跑步时我谈些什么》阅读笔记
-tags:
-  - self
-  - learn-note
-  - life
-toc: true
+title: 《当我跑步时我谈些什么》读书笔记
+tags: [自写,读书笔记,哲理]
 date: 2016-06-28 11:08:38
 ---
 

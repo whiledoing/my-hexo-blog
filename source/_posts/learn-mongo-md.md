@@ -1,8 +1,7 @@
-layout: learn-note-with-toc
+---
 title: mongo学习笔记
 date: 2016-06-28 09:18:46
-tags: [self,mongo]
-toc: true
+tags: [自写,mongo]
 ---
 
 这是我学习[mongo](https://www.mongodb.com/)的笔记
@@ -97,7 +96,7 @@ group将多个相同字段数值合并和一个，并进行统计：
     }
 }
 ```
-     
+
 其中得到的total字段表示所有相同国家人的总数，使用`$sum`操作符来进行累加，value为1表示每次增加一个人。
 
 ## 副本集
@@ -123,16 +122,16 @@ group将多个相同字段数值合并和一个，并进行统计：
 
 ```bash
 # 在分片集合所在的数据库中启动分片功能
-> sh.enableSharding('test')                                 
+> sh.enableSharding('test')
 
 # 在集合中配置分片的索引
-> db.users.ensureIndex({'username' : 1})                    
+> db.users.ensureIndex({'username' : 1})
 
 # 设定集合的片键
 # 其中username后面的1表示索引类型，在ensuereIndex和shardCollection中需要保持一致。
-> sh.shardCollection({'test.users', {'username' : 1})       
+> sh.shardCollection({'test.users', {'username' : 1})
 ```
-    
+
 需要注意的是：**只有被索引过的键才能够成为片键**
 
 启用分片的集群的时候，连接的`mongos`进程。
@@ -145,7 +144,7 @@ group将多个相同字段数值合并和一个，并进行统计：
 > db.users.ensureIndex({'username' : 'hashed'})
 > sh.shardCollection('test.username', {'username' : 'hashed'})
 ```
-    
+
 也可以使用符合片键的策略，使用`<随机数据，升序key>`作为片键，这样子第一个随机数值保证数据可以比较均匀分散到不同的块中，然后再小块中升序排序，这样子热点的范围就只会局限再小块中。
 
 集群相关的所有配置信息都保存在配置服务器的config数据库集合中，如果需要查看集群配置的话，到config数据库中进行查看。
@@ -164,7 +163,7 @@ mongo启动的时候，如果不开启，就不使用安全检查，这个时候
 > use admin
 > db.addUser('root', 'xxxxx')
 ```
-    
+
 在mongo中`admin`数据库中的所有用户都是管理员账号，可以对任何的数据库进行读写，同时可以执行某些只有管理员才可以执行的操作，比如**listDatabases**和**shutdown**
 
 所以在进行mongo数据库登录的时候，使用管理员账号登陆是比较好的：
@@ -172,7 +171,7 @@ mongo启动的时候，如果不开启，就不使用安全检查，这个时候
 ```bash
 > mongo --port 27017 -u root -p xxxxx localhost/admin
 ```
-    
+
 表示使用`root`账号进行登陆，然后使用的是`admin`数据库下的账号。
 
 可以理解`mongo`的账号系统是建立在数据库级别的（或者理解为名空间），如果建立了在`admin`数据库下的账号，就表示是系统管理员的账号。
@@ -194,4 +193,4 @@ mongo启动的时候，如果不开启，就不使用安全检查，这个时候
 > db.auth('root', 'xxxxx')
 ```
 
-这样子表示当前shell我进行了账号登陆，且是管理员账号。当然也可以在mongo连接的使用使用`-u -p`的方式直接使用特定账号进行登陆。 
+这样子表示当前shell我进行了账号登陆，且是管理员账号。当然也可以在mongo连接的使用使用`-u -p`的方式直接使用特定账号进行登陆。

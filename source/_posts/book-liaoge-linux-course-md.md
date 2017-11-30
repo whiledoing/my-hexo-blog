@@ -1,6 +1,6 @@
 ---
-title: 《鸟哥的Linux私房菜》学习笔记
-tags: [self, learn-note, unix/linux]
+title: 《鸟哥的Linux私房菜》读书笔记
+tags: [自写,读书笔记,linux]
 date: 2016-03-24 11:07:05
 toc: true
 ---
@@ -28,13 +28,13 @@ toc: true
 只有设置密码之后才可以有效使用账号，设置密码使用命令`passwd`，可以从`stdin`中得到密码，但是这样子容易根据记录得到密码，一般是批量生成密码的时会这样子使用：
 
     echo xxxx | passwd --stdin test
-    
+
 使用`id`命令可以查看用户所在的`uid/gid`信息，非常有用。
 
 账号切换有两种方式，一种是常规意义上的账号切换，使用`su`命令，su命令切换账号的时候需要输入的是被切换账号的密码，如果不指定名字的话，表示切换到`root`
 
     su - some-user
-    
+
 注意需要加入符号`-`，表示使用新的账号的用户环境，这点没有仔细研究，但是非常重要。
 
 但是这样子切换存在问题，用户需要知道对方的密码，如果我们有时候需要使用`root`权限进行操作，但是又不希望告诉所有人`root`账号的密码，那么就使用`sudo`的方式。`sudo`的执行方式类似于：
@@ -46,11 +46,11 @@ toc: true
 
     sudo -u some-user do-something
     sudo -g some-group do-something
-    
+
 一般其实我们更多的使用：
 
     sudo do-something
-    
+
 表示使用`root`的权限做一些事情。
 
 所有`sudo`的权限需要进行控制，控制文件在`/etc/sudoers`文件中，但是一般我们使用命令`visudo`进行编辑，因为保存的时候会进行语法检测。
@@ -59,20 +59,20 @@ toc: true
 
     root ALL=(ALL:ALL) ALL
     %adm ALL=(ALL) ALL
-    
+
 第一个ALL`表示所有的host，第二个`（ALL:ALL)`表示**所有的用户/所有的组**，不具体制定的话，就表示只对`root`用户可以切换，最后的`ALL`表示具体的可以执行的命令。
 使用`%group-name`表示的是对组进行设定。
 
 如果我让某一个用户可以执行特定的指令，可以设置定：
 
     some-user ALL=(root) /usr/sbin/passwd
-    
+
 表示只可以执行`passwd`命令，注意需要使用绝对路径。
 
 使用`sudo`的好处是，用户输入的是**用户自己的密码，而不是root的密码**，通过如下设置可以让用户不输入密码执行`sudo`：
 
     some-user ALL=(ALL) ALL NOPASSWD:ALL
-    
+
 一些使用`sudo`的技巧：
 
 1.  使用`sudo !!`来执行刚才需要权限执行的命令。`!!`表示上一个执行的命令。
@@ -83,7 +83,7 @@ toc: true
 
     useradd -s /sbin/nologin test
     usermod -s /sbin/nologin test
-    
+
 ### linux文件 && 目录
 
 `ls -l`命令得到的结果中，第一列的数据格式是：
@@ -97,16 +97,16 @@ toc: true
     # s 表示套接字
     -rw-r--r--   1 whiledoing  staff    66K Sep 25 19:35 10001_party_reward.data
 ```
-    
+
 之后的内容表示**文件/文件夹**对于**自己/组/其他**的权限。
 
 使用`chown`可以修改所有者或者组，比如：
 
     chown user:test xxx
     chown :test xxx
-    
+
 使用`user:group`的同时修改**所有者和所在的组**信息。
-    
+
 使用`chmod`可以修改文件的权限，有两种方式：
 
 1.  使用数字的方式：
@@ -122,7 +122,7 @@ toc: true
     chmod g=rx xxx
     chmod u+x xxx
     chmod a+x xxx
-    
+
     # 如果不说明控制域，那么默认是对a进行控制
     chmod -x xxx
     chmod +x xxx
@@ -175,7 +175,7 @@ ls命令有几个参数了解：
 使用`basename`得到一个文件的最后文件名，使用`dirname`得到目录名。
 
 在使用命令`less/more`的时候，使用**:f 可以得到当前流观看形式下文件名和所在的行号。**
-    
+
 文件记录的时间主要有下面几种：
 
 1. atime：(access）文件被读取的时间。
@@ -186,7 +186,7 @@ ls命令有几个参数了解：
 
     ls --time=atime
     ls --time=ctime
-    
+
 使用`touch`命令操作一个已经有的文件，会将文件的`mtime/atime`都进行修改，默认是修改为当前的时间。
 
 文件的默认权限使用`umask`指令进行控制，默认的话很多系统的`umask`设置为`0022`，这个`umsk`数值表示的**不给的权限，或者理解为补运算**，也可以使用`umask -S`查看可以给的权限的形式。
@@ -195,7 +195,7 @@ ls命令有几个参数了解：
 
 文件还有一些特殊的属性，可以使用命令`chattr`指令进行修改，使用`lsattr`指令进行查看。
 比如一个很屌的操作，将一个文件设置为**不能被修改，删除，链接**：
-    
+
     # 其中i状态表示上面说到的功能。
     chattr +i xxx_file
 
@@ -206,7 +206,7 @@ ls命令有几个参数了解：
 
     # -b表示搜索二进制文件
     whereis -b ls
-    
+
 和`whereis`类似的使用`locate`，但是`locate`是什么东西都查找的。
 
 #### 文件和文件系统的压缩与打包
@@ -266,16 +266,16 @@ declare -i sum=100+300+400
 # 定义了一个readonly变量
 declare -r sum=0
 ```
-    
+
 使用`dd`命令可以进行设备之间的拷贝，比如经常用来生成一个空的指定大小的文件:
-    
+
     dd if=/dev/zero of=new_file bs=1M count=20
-    
+
 使用`ulimit`可以得到当前用户使用shell时候的限制，比如最大文件容量，最大进程数目，最大CPU时间等。
 
 ```bash
 # 得到所有限制信息
-ulimit -a 
+ulimit -a
 
 # 得到最大文件大小
 ulimit -f
@@ -283,7 +283,7 @@ ulimit -f
 # 设置最大文件大小
 ulimit -f 100
 ```
-    
+
 在shell中使用逻辑表达式：（这些逻辑表达式还是很有用的简化了代码的编写，编写脚本的时候可以想到去使用这些组合逻辑）
 
 ```bash
@@ -293,7 +293,7 @@ A && B || C
 # if A then C else B -> C
 A || B && C
 ```
-    
+
 #### login shell | none-login shell | interactive shell | none-interactive shell
 
 如果我们使用`用户名，密码`登陆系统的shell，那么得到的是`login shell`，或者使用`su -`得到的就是一个`login shell`，另外方式得到的是非login的形式。
@@ -341,32 +341,32 @@ A || B && C
 
     # 将2重定向到1，默认>就是表示1>
     find /home -name .bashrc > xxx.data 2>&1
-    
+
     # 或者将所有的数据都定向到文件中
     find /home -name .bashrc &> xxx.data
-    
+
 同样的对于`>和>>`的区别在错误处理中也一样子使用`>> xxx.data 2>&1`
 
 同样的，使用`<`可以用来将文件中内容放入到标注输入流中。
 
     cat > xxx.data < from.data
-    
+
 而使用`<<`表示结束输入标志：
 
     cat > xxx.data << "eof"
-    
+
 这样子在输入`eof`之后，输入就完成了。
 
 使用`tee`命令可以有效的将数据流重定向到文件中，同时将流继续保持在标准输出中。
 
     last | tee last.list | cut -d " " -f1
-    
+
 有些情况下，一些命令输入的参数其实是「文件名」，但是我们可以使用`-`来使用**标准的输入输出流**来代替文件名。
 
     tar -jcvf - test/ | tar -xvf - -C newtest/
-    
+
 等价于将数据压缩然后输出到标准输出中，然后从标准输入中得到数据再解压缩到特定文件中（cp）
-    
+
 #### 使用正则表达式与文件的格式化处理
 
 正则表达式这里不多介绍了，主要介绍在grep中的相关使用：
@@ -377,7 +377,7 @@ A || B && C
 
     *   `^ $ . [list]`
     *   `[n1-n2] \{n, m\}`
-    
+
 3. 在bash中`()和{}`都有特殊的语义（解析表达式，已经解析变量），所以在使用的使用需要`\`进行转意。
 
 4. 扩展的正则有：
@@ -385,7 +385,7 @@ A || B && C
     *   `+ ?`
     *   `逻辑或|`
     *   `逻辑组()`
-    
+
 5. 如果使用扩展的正则，需要使用`-E`参数，或者使用`egrep`来进行处理。
 
 下面介绍一个非常NB的流编辑器`sed(stream editor)`。sed可以在字符流中对文件进行处理，包括增加，替换，删除等，主要在自动化的时候使用非常方便，试想你每次配置一个conf文件都需要使用`vim`来编辑一下是多么的痛苦，所以如果可以将相关的文本编辑操作编程特定的命令行可以自动执行就非常的方便了。
@@ -427,7 +427,7 @@ sed '/^#.*/d' test.data
 ```bash
 # 使用-F表示分隔符
 # 这里使用了空格或者:进行分割
-awk -F '[ :]' '{print $1}' /etc/passwd 
+awk -F '[ :]' '{print $1}' /etc/passwd
 
 # 特定的变量，NF表示当前的字段总数，NR表示当前的行号，FS表示当前的分隔符
 # 在`{}`中间记录当前的动作，如果是字符串使用双引号括起来
@@ -475,13 +475,13 @@ test ! cond_a
 另外一种使用`test`的方式就是使用`[]`方式，因为**中括号在很多地方，比如正则表达式中使用**，所以这里的语法是`[ cond_a ]`，在两边都留有**空格**
 
     [ -f xxxx ] && echo "file exist" || echo "file not exist"
-    
+
 在判断语句中，最好将**所有的变量都使用双引号括起来（标准写法）**，因为如果不使用，变量是使用**宏替换**的机制代入代码中，会导致**空格分隔问题**，比如：
 
     # 会报错，因为$a解析出来之后有空格
     a="a b"
     [ $a == "c" ]
-    
+
     # right
     a="a b"
     [ "$a" == "c" ]
@@ -493,7 +493,7 @@ test ! cond_a
 3. `$@`表示所有参数的列表。
 4. 使用`shift n`命令可以将`$@`中的参数进行左移动（就是pop掉n个参数）
 
-#### 逻辑表达式 
+#### 逻辑表达式
 
 ##### if
 
@@ -540,7 +540,7 @@ case "$1" in
     sleep 1
     $0 start
     ;;
-  reload|force-reload) 
+  reload|force-reload)
     log_begin_msg "Reloading ACPI services..."
     start-stop-daemon --stop --signal 1 --exec "$ACPID"
     log_end_msg $?
@@ -595,7 +595,7 @@ done
 for file in /etc/conf/[abcd]*.conf; do
     echo $file
 done
-    
+
 # 范围还可以这样子玩
 # 1 2 3 4 5 6 7 8 9 10
 for i in $(seq 10);
@@ -607,7 +607,7 @@ for i in {1..10}; do
     ...
 done
 
-# 1 3 5 7 9 
+# 1 3 5 7 9
 for i in {1..10..2}; do
     ...
 done
@@ -634,12 +634,12 @@ shell的调试可以使用`bash`的控制参数：
 启动`at`需要启动`atd`服务，可以使用启动：
 
     /etc/init.d/atd restart
-    
+
 设置好之后就可以设置`at`命令了，大概用法有：
 
     # 显示当前的所有at命令
     at -l
-    
+
     # 在特定时间执行特定的命令
     # 这里时间格式大致是：（时分）（月日）
     at 12:30 xxxx
@@ -660,13 +660,13 @@ shell的调试可以使用`bash`的控制参数：
 
       # 分    时  日  月  周  命令
       0     12  *   *   1   mail dmtasi -s "at 12:00"
-      
+
       */5   *   *   *   *   xxxxx
-      
+
       *     8-12    *   *   *   xxx
-      
+
       *     8,9     *   *   *   xxx
-      
+
 上面的语法就是：
 
 1. 在每个周一的12点发送邮件。
@@ -691,7 +691,7 @@ shell的调试可以使用`bash`的控制参数：
 在命令后面加入`&`可以将命令放入后台执行，但是注意，这个时候标准的输出还是在当前终端中，所以需要使用重定向，将输出的信息都重定向到别的地方。
 
     tar -zcvf xxx.tgz xxx/ > /dev/null 2>&1 &
-    
+
 使用`ctrl-z`可以将工作放入到后台进行**暂停**，然后使用`jobs`看到当前在后台的操作。我们可以将最新的后台命令放到前台来执行`fg`，当然然后可以继续使用`ctrl-z`放到后台暂停，如果希望将在后台的指令继续运行，使用`bg`指令。注意这里和`fg`的区别，`fg`是将后台指令放到前台执行，而`bg`是将后台指令在**后台**继续运行，所以有些命令没有将输出重定向的
 
 后台的指令都有一个编号，可以使用`%n`的方式得到后台的任务，在`jobs`得到的结果中，可以看到有`+和-`的两个描述符，最新的使用使用`+`表示，也是默认使用`fg/bg`调用的任务，也可以使用`fg -`来调用倒数第二个任务。
@@ -699,19 +699,19 @@ shell的调试可以使用`bash`的控制参数：
 使用kill任务可以删除后台任务，比如使用：
 
     kill -9 %1
-    
+
 一般的signal有下面几种：
 
     1）1：表示重新读取一次参数的配置文件。
     2）9：立刻强制删除一个工作。
     3）15：正常的方式结束。
-    
+
 参数15表示比较正常的结束。
 
 当然如果希望程序在logout之后也可以继续运行，就是使用`nohup`命令了
 
     nohup xxx > xxx.txt 2>&1 &
-    
+
 #### 进程管理
 
 ps命令主要使用的两个命令：
@@ -719,18 +719,18 @@ ps命令主要使用的两个命令：
 1. `ps aux`
 2. `ps -lA`
 3. `pstree -Aup` 如果希望得到进程树的信息，使用`pstree`命令。
-    
+
 参看当前运行的动态信息，使用`top`指令：
 
     # 得到当前的进程
     top -p 12345
-    
+
     # 得到特定用户
     top -u hzjiangjinzheng
-    
+
     # 得到详细的参数信息
     top -c
-    
+
 在top命令中，需要注意的是：
 
 1. `load average` 记录了cpu在1，5，15分钟的平均运行进程数目，这里需要CPU的个数进行对比分析。
@@ -740,7 +740,7 @@ ps命令主要使用的两个命令：
 如果需要更多的关注当前内存的使用情况，使用命令：
 
     free -m
-    
+
 使用`k|m|g`来调整内存的计算单位。
 
 使用`uname`可以当前系统的各种信息。
@@ -754,7 +754,7 @@ ps命令主要使用的两个命令：
     # l表示正在listen的服务
     # p表示列出进程的PID
     netstat -ntlp
-    
+
 使用`lsof`列出被进程所打开的文件名。
 
 ### misc
@@ -765,28 +765,28 @@ ps命令主要使用的两个命令：
 2.  date 得到当前的日期
 
     使用`date --date='@123456`可以得到将ts转换为日期的格式（mac中好像没有改效果）
-    
+
 3.  cal  显示日历
 
 使用`man`指令，有几个别称
-    
+
     # 查询xxx指令，等价于`whatis xxx`
     man -f xxx
-    
+
     # 查询**包含xxx**的指令，等价于`aprpos xxx`
     man -k xxx
-    
+
 关机有几种方式：
 
     # 10min之后关机
-    shutdown -h +10 
-    
+    shutdown -h +10
+
     # 特定时间
     shutdown -h 20:25
-    
+
     # 立刻关机
     shutdown -h now
-    
+
     # 切换执行等级，0表示关机，6表示重启
     init 0
     init 6
@@ -800,10 +800,10 @@ ps命令主要使用的两个命令：
 
     # 如果test进行设置，那么test就是test，否则使用default_value代替
     test=${test-default_value}
-    
+
     # 如果空字符串也认为没有定义的话
     test=${test:-default_value}
-    
+
 --------
 
   [1]: http://www.cnblogs.com/qcly/p/3273373.html

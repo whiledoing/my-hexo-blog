@@ -1,8 +1,7 @@
 ---
-title: 《止学》学习笔记
-tags: [self,learn-note,life]
-toc: true
+title: 《止学》读书笔记
 date: 2016-02-03 16:53:32
+tags: [自写,读书笔记,哲理,国学]
 ---
 
 在一次偶然机会下看到了[《职场20年总结的》](http://bbs.tianya.cn/m/post-no20-368712-1.shtml?#)天涯神贴，在该帖子中作者多次推荐了这本书。

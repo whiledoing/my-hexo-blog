@@ -1,8 +1,7 @@
-layout: blog
+---
 title: javascript学习笔记
 date: 2016-12-03 22:34:24
-tags: [self,javascript]
-toc: true
+tags: [自写,javascript]
 ---
 
 记录一下自己学习javascript的笔记和总结.

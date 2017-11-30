@@ -1,8 +1,7 @@
 ---
-title: 《The Art of UNIX Programming》学习笔记
-tags: [self,learn-note,unix/linux]
-toc: true
+title: 《The Art of UNIX Programming》读书笔记
 date: 2016-02-01 20:08:14
+tags: [自写,读书笔记,linux]
 ---
 
 [《The Art of UNIX Programming》](http://book.douban.com/subject/5387401/)这本书确实是久仰已久，加之自己最近一直在看linux相关的书籍，所以就带着看了一下。

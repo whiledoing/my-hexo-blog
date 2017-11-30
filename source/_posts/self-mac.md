@@ -1,8 +1,7 @@
 ---
-title:  mac折腾记录
-tags: [self,mac,osx]
+title: mac折腾记录
 date: 2016/1/25 10:01:20
-toc: true
+tags: [自写,mac]
 ---
 
 本文档记录了自己**折腾**mac的相关记录。
@@ -54,11 +53,11 @@ disutil unmount (force) /xxx-busy-dir
 为了方便使用，我将右边的command键位修成了大写（[使用了软件Karabiner-Elements](https://github.com/tekezo/Karabiner-Elements)进行修改，这样子我每次切换输入法只需要使用右边的大拇指轻轻的点击一下即可，效果非常nice。
 
 # tmux
-    
+
 mux绝对是开发人员的神器，尤其是我这种需要连接很多服务器进行开发的来说，使用tmux绝对是神之利器。
 
 tmux中有很多非常好用的插件：
- 
+
  1. [tmux-yank](https://github.com/tmux-plugins/tmux-yank)，方便的拷贝当前的命令和工作目录，使用`prefix + y/Y'的方式
  2. [tmux-open](https://github.com/tmux-plugins/tmux-open)，是不是经常说看到tmux的缓冲区的文件或者目录可以打开，在缓冲区模式中，使用`o/ctrl+o`的方式，可以方便的打开，或者调用**$EDITOR进行编辑**
 

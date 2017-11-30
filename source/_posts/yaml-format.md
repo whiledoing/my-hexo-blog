@@ -1,7 +1,7 @@
 ---
-title:  yaml格式
+title: yaml格式
 date: 2016/1/20 22:46:37
-tags: [self,yaml]
+tags: [自写,yaml]
 ---
 
 `yaml`格式是一种轻量级别的序列化语言。该[文章][1]对`yaml`的相关来源，语法进行了说明。

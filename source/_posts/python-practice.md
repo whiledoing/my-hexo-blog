@@ -1,8 +1,7 @@
 ---
 title: python misc
-tags: [self,python]
 date: 2016-03-10 22:41:31
-toc: true
+tags: [自写,python]
 ---
 
 本文档记录了写python代码时候的一些**技巧，实践，心得**等等。
@@ -93,8 +92,8 @@ for dst, dst_info in self._flower_cache.iteritems():
 ```python
 foo = 'foo'
 bar = 'bar'
-foobar = '%s%s' % (foo, bar) # It is OK 
-foobar = '{0}{1}'.format(foo, bar) # It is better 
+foobar = '%s%s' % (foo, bar) # It is OK
+foobar = '{0}{1}'.format(foo, bar) # It is better
 foobar = '{foo}{bar}'.format(foo=foo, bar=bar) # It is best
 ```
 
@@ -152,7 +151,7 @@ python一个非常有用的语法特性，就是可以将上下文进行管理�
     import contextlib
     import urllib
 
-    with contextlib.closing(urllib.urlopen('http://xxx.org')) as page: 
+    with contextlib.closing(urllib.urlopen('http://xxx.org')) as page:
         pass
     ```
 
@@ -180,12 +179,12 @@ python一个非常有用的语法特性，就是可以将上下文进行管理�
 #### python函数的lazy binding closures
 
 ```python
-def create_multipliers(): 
+def create_multipliers():
     return [lambda x : i * x for i in range(5)]
 
 >>> for m in create_multipliers():
 >>>     print m(2)
->>> 
+>>>
 >>> 8 8 8 8 8
 ```
 
@@ -196,11 +195,11 @@ def create_multipliers():
 而且这个问题并不只是lambda的问题，而是所有的函数都这样子，即使使用def定义的函数，如下（也一样有问题）：
 
 ```python
-def create_multipliers(): 
-    for i in range(5): 
-        def multiplier(x): 
-            return i * x 
-        multipliers.append(multiplier) 
+def create_multipliers():
+    for i in range(5):
+        def multiplier(x):
+            return i * x
+        multipliers.append(multiplier)
     return multipliers
 ```
 
@@ -208,19 +207,19 @@ def create_multipliers():
 
 ```python
 # 因为i=i会将默认值的i直接绑定到闭包中
-def create_multipliers(): 
+def create_multipliers():
     return [lambda x, i=i : i * x for i in range(5)]
 
 >>> for m in create_multipliers():
 >>>     print m(2)
->>> 
+>>>
 >>> 0 2 4 6 8
 ```
 
 或者使用系统的partial函数进行参数绑定：
 
 ```python
-def create_multipliers(): 
+def create_multipliers():
     from operator import mul
     from functools import partial
     return [partial(mul, i) for i in range(5)]
@@ -357,8 +356,8 @@ if __name__ == '__main__':
     consumer.send(None)
     producer = produce(consumer)
 
-    for _ in range(10): 
-        print('Producing...') 
+    for _ in range(10):
+        print('Producing...')
         next(producer)
 ```
 
@@ -397,7 +396,7 @@ def fetch_coroutine(url):
 ```python
 # Simplified inner loop of tornado.gen.Runner
 def run(self):
-    # send(x) makes the current yield return x. It returns when the next yield is reached 
+    # send(x) makes the current yield return x. It returns when the next yield is reached
     future = self.gen.send(self.next)
     def callback(f):
         self.next = f.result()
@@ -769,7 +768,7 @@ result = namespace[typename]
 
 ```python
 >>> Point = namedtuple('Point', ['x', 'y'])
->>> p = Point(11, y=22)        
+>>> p = Point(11, y=22)
 >>> p[0] + p[1]                     # indexable like a plain tuple
 33
 >>> x, y = p                        # unpack like a regular tuple

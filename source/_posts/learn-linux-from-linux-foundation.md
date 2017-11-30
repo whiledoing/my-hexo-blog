@@ -1,8 +1,7 @@
 ---
 title: linux course from linux foundation 学习记录
-tags: [self,unix/linux]
 date: 2016-03-24 09:58:20
-toc: true
+tags: [自写,linux]
 ---
 
 linux foundation 提供了一个不错的[在线linux教程](https://courses.edx.org/courses/course-v1:LinuxFoundationX+LFS101x.2+1T2015/info)，里面介绍了linux很多基本的概念，历史，操作和使用习惯等知识。
@@ -12,7 +11,7 @@ linux foundation 提供了一个不错的[在线linux教程](https://courses.edx
 使用文件描述法进行重定向：
 
 ```bash
-some_exc > file 2 >& 1 
+some_exc > file 2 >& 1
 ```
 
 另外一个简写是：
@@ -150,7 +149,7 @@ awk -F : '{ print $1 }' /etc/passwd
 
     ```bash
     # file1和file2的对应行连接一行，并使用tab分割
-    paste -d '\t' file1 file2        
+    paste -d '\t' file1 file2
 
     # file1的所有行变为一行，并使用':'分割
     paste -d ':' -s file1

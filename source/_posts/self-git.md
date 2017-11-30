@@ -1,8 +1,7 @@
 ---
 title: git学习记录
 date: 2016/1/31 22:16:46
-tags: [self,git]
-toc: true
+tags: [自写,git]
 ---
 
 这个文档记录了自己学习和折腾`git`的内容。
