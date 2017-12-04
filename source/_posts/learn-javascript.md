@@ -86,11 +86,8 @@ BOM模型以windows对象为依托, 表示浏览器窗口和页面可见区域. 
 比如常用的windows接口有几个:
 
 - innerHeight/innerWidth/outerWidth/outerHeight表示窗口的信息
-
 - open打开新的窗口
-
 - setTimeout/setInterval用来设定定时器
-
 - alert/confirm/prompt用来弹出对话框
 
 `location`对象比较特殊, 既可以访问于`window.location`也可以访问于`document.location`, 两者是完全一致的.
@@ -101,7 +98,7 @@ BOM模型以windows对象为依托, 表示浏览器窗口和页面可见区域. 
 
 也可以使用`location.reload`来重新刷新当前的页面.
 
-### jQuery
+### jQuery lib
 
 **jQuery is just a javascript framework**
 
@@ -132,13 +129,10 @@ $('tag').siblings()
 $('tag').find('#somebody')
 ```
 
-使用`toggle`方法可以切换一个节点的可见性, 同理使用`toggleClass`可以修改一个节点是否有一个类.
-
-使用`text`方法用来设置元素的内部文本数值.
-
-使用`append`用来加入一个节点到最后一个孩子节点上, 相反, 使用`prepend`方法加入节点到第一个孩子节点上.
-
-对应的, 如果是兄弟之间的插入的话, 就是使用`before`和相反的`after`
+- 使用`toggle`方法可以切换一个节点的可见性, 同理使用`toggleClass`可以修改一个节点是否有一个类.
+- 使用`text`方法用来设置元素的内部文本数值.
+- 使用`append`用来加入一个节点到最后一个孩子节点上, 相反, 使用`prepend`方法加入节点到第一个孩子节点上.
+- 对应的, 如果是兄弟之间的插入的话, 就是使用`before`和相反的`after`
 
 使用`css`方法可以设置css, 当然也可以得到css属性, 如果说明的是, 这里设置的css相当于是设置了style属性, 而不是修改了css文件, 所以你需要权衡一下是否应该直接用css实现, 而不是使用jQuery.
 
@@ -190,11 +184,8 @@ $( 'article' ).on( 'click', function( evt ) {
 别的几个有用的event数据信息有:
 
 - `preventDefault()`屏蔽掉默认的处理行为, 比如click事件的点击效果.
-
 - `keyCode()`得到输入的key信息
-
 - `pageX`点击位置的坐标
-
 - `type`事件类型, 分析多个时间的时候有效
 
 jQuery还有几个简写的方式, 比如`keypress(cb)`就是等价于`on('keypress, cb)`, 基本上所有基本事件都有对应的简写形式, 使用的时候需要留意, 怎么简单怎么来.
@@ -428,7 +419,6 @@ window.onload = function () {
 这里更多是实现view的接口, view的接口根据当前`octopus(controller)`提供的接口计算出所有的需要显示的list数据. 而`catView`就是根据当前`currrentCat`的数据来渲染出当前需要显示的cat信息. 这里一个比较好的实现是:
 
 - 用`init`方法进行初始化, 比如进行元素选择, 构造相应方法等逻辑, 然后调用render进行渲染.
-
 - 将所有的数据看成一个Object的List组织, 当前的数据就是一个指针数据的改变.
 
 ### 使用[KnockOutJS](http://knockoutjs.com/index.html)实现MVVM
@@ -438,7 +428,6 @@ window.onload = function () {
 可以使用[KnockOutJS](http://knockoutjs.com/index.html)库来改进. 这个库主要的功能就是使用observer模式建立view和model的关系. 在html中给特定的标签加入特定的描述信息, 该信息和对应的`ViewModel`(controller的变种, 反正就是连接用的)的数据建立关系, 一旦对象数据变化, 那么html就会重新渲染(框架帮我做了这些事情). 这样子的好处就是:
 
 - 基本不用写view的代码了. 因为view的代码都嵌套到html中进行描述, nice! 本身html就是一种render的描述方式, 通过扩展和对应的数据建立关系.
-
 - 数据的修改会通知对应观察者的html进行修改, 相当于自动进行re-render.
 
 修改后的代码为:
@@ -511,11 +500,8 @@ window.onload = function () {
 代码明显简洁了很多, 个人总结的几个要点(目前该库掌握还处于基础阶段, 可能总结的范式不是非常准确):
 
 - 在html中定义了需要监听改变的tag, 可以监听改变的变量使用`ko.observable`类型生成.
-
 - 将`Cat`抽象成一个对象, 其中的数据都是可以监听修改的, 这样子的好处是, 如果这个对象内容被变化, 那么所有成员数据如果是`ko.observable`的, 都认为变化, 体现了整体动全局动的概念. 而单体属性, 比如`clickCount`也设置为`ko.observable`是为了可以单独控制这个变量的修改, 对特定的html产生变化.
-
 - 可以将`ko.observable`看做一个proxy, 就是一个变量的代理. 不同的就是接口层面上, 因为要知道数据修改, 只能使用调用函数的方式通过set语义进行修改.
-
 - 对于`ko.observableArray`类型的`catList`对象就好理解了, 本身是一个需要监听改变的数据(可能加入新的cat), 然后其保存的数据**就是普通的cat对象(并不是观察的对象)**, 只是一个集合而已. 而我们的`currentCat`对象是一个指向当前的`Cat`指针变量, 因为需要监听这个指针变化, 所以也是一个`ko.observable`类型的变量.
 
 <script async src="//jsfiddle.net/bycsjp9f/embed/js,html,css,result/dark/"></script>
@@ -527,13 +513,9 @@ window.onload = function () {
 大致学习了一下, AngularJS和KnockOut挺相似, 都是使用扩展html的方式来实现view和数据的自动binding:
 
 - view就是一个html, 使用template的方式来组合相应的变量数据.
-
 - controller是一个用来和view组合使用的概念, 比如代码`  <div ng-include="'views/cat_list.html'" ng-controller="CatControllerCtrl as cat"></div>`就可以将一个view和对应的controller进行组合, 所有view中的teamplate的变量获取都是从controller中进行获取.
-
 - service是隶属于controller中的, 更多的是表示**纯数据**的包装类, controller可以共用多个service, 这种组合关系一下就让controller变得强大, 因为不同的controller可以共用不同的service.
-
 - module又是一个更加上层的概念, 所有的view, controller, service, routing可以构成一个组件, 这个组件可以共用, 也就是说我们的app是一个moudle, 同时我可以利用别的写好的moudle进行扩展.
-
 - 感觉AngularJS强大的地方在于非常的灵活, template机制也非常强大(不需要想KnockOut那样子定义observable), 组合的使用方式非常便于扩展.
 
 重新实现了一下`CatList`的程序, 因为不是很熟悉, 所以实现比较低端, 只是一个概念.
