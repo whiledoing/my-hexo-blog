@@ -4,12 +4,11 @@
 
 # Site
 title: whiledoing
-subtitle: 喜欢一切简单且美的事物，包括人。
-description: 喜欢一切简单且美的事物，包括人。
+subtitle: 喜欢一切简单的设计和她
+description: wiledoing's personal blog | coder
 author: whiledoing
 email: whiledoing@163.com
-# language: zh-CN
-language: zh-Hans
+language: zh-CN
 timezone: Asia/Shanghai
 
 # URL
@@ -65,8 +64,12 @@ pagination_dir: page
 # Extensions
 ## Plugins: https://hexo.io/plugins/
 ## Themes: https://hexo.io/themes/
+# theme: hexo-theme-next
+# theme: modernist
+# theme: landscape-plus
 # theme: hexo-theme-yilia
-theme: hexo-theme-next
+theme: hexo-theme-yelee
+theme_repo: https://github.com/MOxFIVE/hexo-theme-yelee
 
 # Deployment
 ## Docs: https://hexo.io/docs/deployment.html
