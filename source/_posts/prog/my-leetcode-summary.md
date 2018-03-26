@@ -151,12 +151,12 @@ public:
 };
 ```
  
-#### wrap up
+wrap up:
  
 1. 搜索问题的bfs一般比基于dp的方法更容易实现, 同时使用合理的剪枝和备忘录方法可以达到非常高的效率.
 2. 明确搜索问题的状态空间是什么, 这里就是在i位置和值为sum, 这两个情况, 其实和DP中的变量是一直的.
  
-### 求和问题2
+## 求和问题2
  
 Given a collection of candidate numbers (C) and a target number (T), find all unique combinations in C where the candidate numbers sums to T.
  
@@ -288,13 +288,13 @@ public:
 };
 ```
  
-#### wrap up (真心有点难理解)
+wrap up (真心有点难理解):
  
 1. 相同的元素选择对最后结果影响相同的情况下, 进行排序, 按照block的思想对数据进行选择组合.
 2. 搜索的时候, 可以结果状态空间数来分析, 有了空间树可以更好的理解递归解决好所有问题的含义.
 3. 前面的元素的选择好的情况下, 递归就会计算出之后所有的结果, 所以如果前面一个元素没有使用, 而当前元素使用了, 且两者数值相同, 结果是等价的.
  
-### 最好的获得股票3
+## 最好的获得股票3
  
 Say you have an array for which the ith element is the price of a given stock on day i.
  
@@ -354,12 +354,12 @@ public:
 };
 ```
  
-#### wrap up
+wrap up：
  
 1. 记录最大值, 想到使用DP的思想, 得到当前一个子range的最大值.
 2. 找到两个, 可以理解为在两个区间, 区间就想到了DP来构造.
  
-### 最大沉水问题
+## 最大沉水问题
  
 Container With Most Water
  
@@ -422,14 +422,11 @@ public:
  
 这样, 即使长度降低, 但是高度不停增大, 也会操作最优的方向计算.
  
-#### wrap up
+wrap up:
  
-1. 这种最优, 想到排除可能的方法, 控制一个变量, 然后在缩小范围的时候, 总是朝着最优的可能路径进行搜索.
+ 这种最优, 想到排除可能的方法, 控制一个变量, 然后在缩小范围的时候, 总是朝着最优的可能路径进行搜索. [ref]( http://blog.unieagle.net/2012/09/16/leetcode%E9%A2%98%E7%9B%AE%EF%BC%9Acontainer-with-most-water/)
  
-http://blog.unieagle.net/2012/09/16/leetcode%E9%A2%98%E7%9B%AE%EF%BC%9Acontainer-with-most-water/
- 
- 
-#### Convert Sorted List to Balanced Binary Search Tree 
+## Convert Sorted List to Balanced Binary Search Tree 
  
 从一个有序的链表中转换为一个平衡二叉树.
  
@@ -499,7 +496,7 @@ public:
 ```
 
 
-### 寻找一个字符串中最长没有重复字符的子串
+## 寻找一个字符串中最长没有重复字符的子串
  
 Given a string, find the length of the longest substring without repeating characters. For example, the longest substring without repeating letters for "abcabcbb" is "abc", which the length is 3. For "bbbbb" the longest substring is "b", with the length of 1.
  
@@ -540,10 +537,192 @@ public:
 };
 ```
  
-#### warp up
+warp up:
  
-1.    使用简单的类型比负责的更方便有效
-2.    分析基本的操作, 将过多的操作提取成简单的基本操作模式.
+1. 使用简单的类型比负责的更方便有效
+2. 分析基本的操作, 将过多的操作提取成简单的基本操作模式.
  
+ 
+## Valid Palindrome Total
+ 
+Given a string, determine if it is a palindrome, considering only alphanumeric characters and ignoring cases.
+ 
+For example,
+"A man, a plan, a canal: Panama" is a palindrome.
+"race a car" is not a palindrome.
+ 
+Note:
+Have you consider that the string might be empty? This is a good question to ask during an interview.
+ 
+For the purpose of this problem, we define empty string as valid palindrome.
+ 
+其实题目很简单，一种方式就是不挺的在首尾搜索，进行搜索，我的第一个想法是类似于quicksort的方式，写两个while循环，
+然后不听的搜索到符合条件的位置，但是这样子的写法需要很多的范围判断：
+ 
+```C++
+while(i < j) {
+    while(i < j && !isalnum(a[i])) ++i;
+    while(i < j && !isalnum(a[j])) --j;
+    if(i < j && tolower(a[i++]) != tolower(a[j--])) return false;
+}
+```
+ 
+虽然看起来没有太多影响，但是很多的范围判断还是不爽。 一定程度上而言，这样子的while循环方式还有一种一个一个元素进行操作的方式，比如这里，完全可以固定一个位置，如果i位置不合适，就移动i，如果j位置不合适就移动j，直到某个位置都合适位置： 
+
+```C++
+class Solution {
+public:
+    bool isPalindrome(string s) {
+        // IMPORTANT: Please reset any member data you declared, as
+        // the same Solution instance will be reused for each test case.
+        int i = 0, j = s.size() - 1;
+        while(i < j) {
+            if(!isalnum(s[i])) ++i;
+            else if(!isalnum(s[j])) --j;
+            else if(tolower(s[i++]) != tolower(s[j--])) return false;
+        }
+        return true;
+    }
+};
+```
+ 
+## Binary Tree Maximum Path Sum
+
+Given a binary tree, find the maximum path sum.
+ 
+The path may start and end at any node in the tree.
+ 
+For example:
+Given the below binary tree,
+ 
+       1
+      / \
+     2   3
+ 
+结果为6.
+ 
+这个题目的关键点在于，有几种最优的情况。
+ 
+1. 一旦一个路径从左子树穿过了跟节点到了右子树，这个根节点就是最上层节点，负责结果无意义。（试着想一下^形状，倒着的V字）
+2. 所以递归可以得到的最佳路径，一定是要么是根节点本身，要么是穿过一个子树。
+3. 但是全局上，一定是存在一个节点，即可以走过左子树也可以走过右子树，同时包含了当前节点，所以对于全局而言，记录该节点的位置即可，但是dfs的时候不需要返回。
+
+```C++
+class Solution {
+public:
+    int res;
+    int maxPathSum(TreeNode *root) {
+        // IMPORTANT: Please reset any member data you declared, as
+        // the same Solution instance will be reused for each test case.
+        res = INT_MIN;
+        dfs(root);
+        return res;
+    }
+ 
+    int dfs(TreeNode* root) {
+        if(!root) return 0;
+ 
+        int l = dfs(root->left);
+        int r = dfs(root->right);
+ 
+        int sum = max(root->val, max(l,r) + root->val);
+        res = max(max(res, sum), root->val + l + r);
+        return sum;
+    }
+};
+```
+ 
+ 
+## Best Time to Buy and Sell Stock II
+ 
+Say you have an array for which the ith element is the price of a given stock on day i.
+ 
+Design an algorithm to find the maximum profit. You may complete as many transactions as you like (ie, buy one and sell one share of the stock multiple times). However, you may not engage in multiple transactions at the same time (ie, you must sell the stock before you buy again).
+ 
+这个题目的逻辑在于，需要得到所有递增的区间，每一个区间都是可以购买的。一个方式是while循环找到所有递增的区间，然后计算差值。
+ 
+但是更好的方式在于：只计算每一个小段的和值。
+ 
+逻辑在于我只需要累加计算即可，整体上的考虑可以化为更小unit的累加，和上上题目一样，几个大while的循环可以变为更小单位计算：
+ 
+```C++
+class Solution {
+public:
+    int maxProfit(vector<int> &prices) {
+        // IMPORTANT: Please reset any member data you declared, as
+        // the same Solution instance will be reused for each test case.
+        int res = 0;
+        for(int i = 0; i < prices.size() - 1; ++i) {
+            if(prices[i+1] > prices[i])
+                res += (prices[i+1] - prices[i]);
+        }
+        return res;
+    }
+};
+```
+ 
+但是上面的代码存在bug， size()方法返回值是unsigned,所以size()-1变为了一个最大的正数！！！
+使用size()的时候一定要非常小心，换成另外一种方式：
+ 
+```C++
+class Solution {
+public:
+    int maxProfit(vector<int> &prices) {
+        // IMPORTANT: Please reset any member data you declared, as
+        // the same Solution instance will be reused for each test case.
+        int res = 0;
+        for(int i = 1; i < prices.size(); ++i) {
+            if(prices[i] > prices[i-1])
+                res += (prices[i] - prices[i-1]);
+        }
+        return res;
+    }
+};
+```
+ 
+## Given s1, s2, s3, find whether s3 is formed by the interleaving of s1 and s2.
+ 
+For example,
+Given:
+s1 = "aabcc",
+s2 = "dbbca",
+ 
+When s3 = "aadbbcbcac", return true.
+When s3 = "aadbbbaccc", return false.
+ 
+重点在于DP，但是本来以为计算是二维的，以为计算了i，和j位置对应的两个子串，以及k对应的s3子串位置的格局。
+但是其实不需要三维，以为第三维k一定是等于i+j的，不然怎么叫做通过s1[0..i]和s2[0..j]拼接成为了s3[0..k]呢？
+
+```C++ 
+class Solution {
+public:
+    string s1, s2, s3;
+    vector<vector<int>> res;
+    bool isInterleave(string s1, string s2, string s3) {
+        // IMPORTANT: Please reset any member data you declared, as
+        // the same Solution instance will be reused for each test case.   
+        this->s1 = s1, this->s2 = s2, this->s3 = s3;
+ 
+        res.clear();
+        res.resize(s1.size() + 1, vector<int>(s2.size() + 1, -1));
+        if(s1.size() + s2.size() != s3.size()) return false;
+ 
+        return dfs(0, 0, 0) == 1;
+    }
+ 
+    bool dfs(int i, int j, int k) {
+        if(k == s3.size())
+            return true;
+ 
+        if(res[i][j] != -1) return res[i][j];
+ 
+        if(i < s1.size() && s3[k] == s1[i] && dfs(i+1, j, k+1)) return res[i][j] = true;
+        if(j < s2.size() && s3[k] == s2[j] && dfs(i, j+1, k+1)) return res[i][j] = true;
+ 
+        return res[i][j] = false;
+    }
+};
+```
+
 
   [1]: https://leetcode.com/
