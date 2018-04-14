@@ -1,7 +1,7 @@
 ---
 date: 2018/4/11 16:04:47
 tags: [自写,ML,AI]
-title: Coursera - Andrew Ng - Machine Learning - study notes
+title: Coursera - Andrew Ng - Machine Learning - 学习笔记
 ---
 
 非常好的机器学习入门教程 [Coursera - Andrew Ng - Machine Learning](https://www.coursera.org/learn/machine-learning)。记录一下我的学习笔记。
@@ -337,24 +337,75 @@ $$
 
 这样子，如果任一个数值如果是0，价值将非常低，两者都比较高的情况下，价值高。这是一种ml领域常用的计算方法。
 
+# SVM
 
+## Concept
 
+自己学的时候也不是特别的明白，所以这里总结一下明白的内容，不一样完全正确，有待以后理解之后重新修订。@TODO
 
+SVM是一种logestic regression的变种，其第一个改动在于如何计算预测的结果和实际种类之间的代价。在logestic中，代价使用log的关系来表述，函数连续，概念上定义为**特定种类的概率**，而**SVM不使用连续函数**，而是将数值截断：
 
+![image_1cb1onrir2mk1d06hvr1uf2609.png-117.4kB][45]
 
+注意图中的横坐标是$z$，是没使用logestic规约前的数据，换个理解就是：**当$y=1$的时候，如果$z$数值大于1，就没有代价**，可以理解为logestic连续函数的一种**降维解析**。课程中描述这样子可以计算的更快，考虑到变成了非连续函数形式，就不能使用偏微分解析解计算梯度，所以可能的实现方式是使用**高度优化的数值计算算法**计算梯度，可能这也是SVM设计出发点之一。
 
+优化的方程变为：
 
+![image_1cb1pd7sc4aej61uvp1cbrs4pm.png-82.7kB][46]
 
+注意描述形式：
 
+- $C$参数去掉了$\frac 1 m$的计算，等价于原来的$C=\frac 1 \lambda$，所以$C$越大，越容易overfit.
+- 另外，我想不计算$\frac 1 m$的原因（相比于logestic）是因为计算的代价不具备规约性。logestic的计算结果是概率规约到log函数的输出，是连续的，数据可能很小，也可能很大，所以需要$\frac 1m$进行规约，否则**不同规模$m$的代价结果会完全不一样**，没有可比性（不规约的话，基本上数据越多，最终的代价越大）。而这里是断层的函数，不是连续的结果，而是大是大非的结果，所以结果和规模没有关系，也就是不同规模的$m$也可以比较（相反，如果规约，可能数据越多，代价越小。试想，大多数单个数据代价是0，有几个数据代价比较大，结果一规约，代价被平均了）。
 
+SVM也叫做large margin classification，因为其计算得到的决策边界距离数据集的边界都比较大。其实也好理解，如果划分有偏向性，或者说距离特定类别数据更近，那么另一侧数据导致的代价就会较大：
 
+![image_1cb277igf17o11rkgl0c19m91vfa13.png-66.6kB][47]
 
+$C$参数越大，划分的边界距离会变小，因为需要更多的考虑突出的节点导致的cost急剧变大，也就会更好的迎合所有节点，进而导致可能overfit。
 
+## Kernel
 
+SVM的另外一种形式是Non-linear，也就是特征数据组合出了非线性特征（类似于NN算法的隐含层），其核心就是引入了kernel概念。
 
+kernel的目的是将特征集合$x$映射到另外特征集合$f$，这样就等于将特征数据进行了飞线性化扩展。常用的kernel是Gaussian kernel:
 
+![Screen Shot 2018-04-14 at 22.12.00.png-156.3kB][48]
 
+其中，$l$表示标记数据。高斯kernel的意义就是将特征集合$x$和所有标记数据的**相似度**作为新特征。一般将标记点设为为数据集合$x$本身，这样子每一个数据都和$m$个其余数据计算相似度，最后得到$f \in \mathbb{R}^{m \times m}$。
 
+上述构造过程的一个启发式理解：
+
+- 当$m$很大，而$n$很小时，可能出现underfit，所以需要更多数据。
+- 可以挖掘特征的地方就是标记的特征本身，因此我们要充分利用**特征的相关性**来构造新特征，也就是要将单个特征和全局特征联系起来考虑。
+- 所以想到每一个数据和其余$m$个数据进行比较，使用相似度的方式将类似的数据集合更好的归类到一起，进而加权影响到最后的权重。（如果我们越相似，且结果也类似，那么集聚起来就成了趋势）
+
+Gussian Kernel的图形类似一个帽子：
+
+![image_1cb29ps1h11891chat8i1c9d1lfo1o.png-173.6kB][49]
+
+如果数据完全一致，结果为1，否则，距离越远，相似度越小。参数$\delta$表示偏差大小，数值越小，帽子越尖，要求越苛刻。
+
+偏差对模型的影响和$C$参数刚好相反，如果$\theta^2$越小，说明要求越苛刻，必须比较接近才算相似，需要更好的拟合训练数据，也就会容易出现high variance。相反，$\theta^2$越大，要求越松，拟合要求不那么高，可能出现high bias.
+
+特别提醒，**计算Gussian kernel之前要将所有数据scaling**，否则不在维度的各个特征之间加和计算的相似度没有意义。
+
+修改后的SVM优化方程变为：
+
+![image_1cb2ajn2gioej1dp3adk01j8e9.png-94.3kB][50]
+
+没有使用kernel的SVM也叫做使用了**linear kernel == no kernel**。
+
+## Logestic regression vs. SVMs
+
+![image_1cb2apd9r1i5lfkqeb34hhhmom.png-181.2kB][51]
+
+总的说来：
+
+- SVM使用kernel的版本是非线性模型。
+- 特征数量相比于数据数量更小时，使用SVM扩展特征更好。
+- 数据特别多时候，SVM计算会比较耗时，可以考虑加入更多特征，使用logestic。
+- 总的说来，SVM应用场景更多，因为一般数据都没有那么多，但相比于特征又显得较多。
 
 
 
@@ -433,3 +484,10 @@ $$
   [42]: http://static.zybuluo.com/whiledoing/vc6km393fgg6239e1ww8kj8f/image_1cavlu67tfso1qs9ma1bspik2ek.png
   [43]: http://static.zybuluo.com/whiledoing/6quvafr4yp3cx58lz383dm2y/image_1cb0uat24u8a1p42m5104sd3c9.png
   [44]: http://static.zybuluo.com/whiledoing/0452km5iw4fcvkysr33aphij/image_1cb0utokb1noqj8v1mlj11k2pm.png
+  [45]: http://static.zybuluo.com/whiledoing/zs4hj1se2cn100zta58475o7/image_1cb1onrir2mk1d06hvr1uf2609.png
+  [46]: http://static.zybuluo.com/whiledoing/ysfc20l57sqf8p5jq94zdety/image_1cb1pd7sc4aej61uvp1cbrs4pm.png
+  [47]: http://static.zybuluo.com/whiledoing/uwyo5vp2ra7xtcped99myjle/image_1cb277igf17o11rkgl0c19m91vfa13.png
+  [48]: http://static.zybuluo.com/whiledoing/z8qmtswzpklojjp03ki8sdyf/Screen%20Shot%202018-04-14%20at%2022.12.00.png
+  [49]: http://static.zybuluo.com/whiledoing/y4urfpa4jdge3m6vdj8u05kc/image_1cb29ps1h11891chat8i1c9d1lfo1o.png
+  [50]: http://static.zybuluo.com/whiledoing/ccyuosufjc7agxz1lw69a72m/image_1cb2ajn2gioej1dp3adk01j8e9.png
+  [51]: http://static.zybuluo.com/whiledoing/a25hlm6atev84jdzxn05gb00/image_1cb2apd9r1i5lfkqeb34hhhmom.png
