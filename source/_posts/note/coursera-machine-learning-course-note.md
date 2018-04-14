@@ -1,12 +1,12 @@
 ---
 date: 2018/4/11 16:04:47
 tags: [自写,ML,AI]
-title: Coursera - Andrew Ng - Maching Learning - study notes
+title: Coursera - Andrew Ng - Machine Learning - study notes
 ---
 
 非常好的机器学习入门教程 [Coursera - Andrew Ng - Marching Learning](https://www.coursera.org/learn/machine-learning)。记录一下我的学习笔记。
 
-课后编程作业非常有意思：[实现代码](https://github.com/whiledoing/coursera-maching-learning-course-homework)
+课后编程作业非常有意思：[实现代码](https://github.com/whiledoing/coursera-machine-learning-course-homework)
 
 <!--more-->
 
@@ -299,6 +299,85 @@ $$\theta = \theta - \alpha {1 \over m} X^T(X \theta - y)$$
 | Try increase $\lambda $ | fix overfit |
 | Try decrease $\lambda $ | fix underfit |
 
+为此，课程中推荐的解决machine learning问题的步骤是：
+
+![image_1cavlu67tfso1qs9ma1bspik2ek.png-31kB][42]
+
+注意，使用cross validation集合来分析问题，而不是test集合。因为如果使用test集合来分析问题，调整模型，就等于有意识的**迎合测试集合的特性**，而用cv集合来分析调整模型，最后得到的结果再用test集合进行测试更有意义。
+
+关于数据和特征的选择顺序：
+
+- 选择足够多的特征（logestic/linear regression），或者神经网络使用足够多的hidden units（神经网络的隐藏层就是在扩充特征的数目，而且是非线性特征），这样子可以保证**low bias**
+- 然后使用足够多的数据，可以保证**low variance**
+
+## Skewed Data
+
+如果数据标记结果大多数都是0或1，比如考虑cancer问题，大多数结果都是非cancel，这种数据叫做skewed data。存在问题是：可能cv验证得到误差非常小，比如5%错误率，但实际上计算结果并不好。考虑到数据中可能只有0.5%数据是cancer，预测模型非常容易就将数据都预测为非cancer，虽然误差只有5%，但可能所有的cancer的病理都被判定为没有cancer，所以并不准确。
+
+引入precision/recall的概念
+
+![image_1cb0uat24u8a1p42m5104sd3c9.png-108.3kB][43]
+
+- 习惯上，将$y=1$标记为**不太容易**出现的类别标识。
+- precision表示预测出来为1的结果中有多少是真的1。换个理解，如果precision高，表示预测结果准确，预测出来为1的结果非常可信，因为大多数都是真的1的样例。
+- recall表示标记数据集合中是1的数据有多少被预测正确。换个理解，如果recall高，表示标记集合中为1的数据基本都被预测到了，模型非常容易将数据判定为1，但可能准确度不高（太容易放行）
+
+换一个角度来分析一下，对于二元判定问题，设定不同的阈值对precision/recall的影响：
+
+![image_1cb0utokb1noqj8v1mlj11k2pm.png-132.4kB][44]
+
+- 如果希望预测的结果非常可信，设定的阈值比较高，导致precision高，但是recall低。基本上预测出来是癌症的多数是癌症，而不是让不太可能的情况预测为癌症，让病人心里难受。
+- 相反，希望预测结果可以反映大多数可能是癌症的情况，让病人可后续跟进治疗，设定低阈值，导致precision低（放行太多），但是recall高。我想这也是recall的来源吧，表示还需要进一步去recall查询下，看是不是真有癌症。
+
+一种自动计算阈值的方法是结合考虑precision/recall:
+
+$$
+F_1 \text{Score(F Score)} = 2  \frac {PR} {P+R}  
+$$
+
+这样子，如果任一个数值如果是0，价值将非常低，两者都比较高的情况下，价值高。这是一种ml领域常用的计算方法。
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -351,3 +430,6 @@ $$\theta = \theta - \alpha {1 \over m} X^T(X \theta - y)$$
   [39]: http://static.zybuluo.com/whiledoing/w5thsatfxf2ixladuv3k95ya/image_1cavii2q91uea1rb1dlit7kaordd.png
   [40]: http://static.zybuluo.com/whiledoing/eqph28ol1tsuos5s08tciork/image_1caviqlo2jpfa6pfrljc3cdvdq.png
   [41]: http://static.zybuluo.com/whiledoing/9dm51b7iejeuztwf6itjkrh6/image_1cavir0hksdsodp1u9l1t0lag3e7.png
+  [42]: http://static.zybuluo.com/whiledoing/vc6km393fgg6239e1ww8kj8f/image_1cavlu67tfso1qs9ma1bspik2ek.png
+  [43]: http://static.zybuluo.com/whiledoing/6quvafr4yp3cx58lz383dm2y/image_1cb0uat24u8a1p42m5104sd3c9.png
+  [44]: http://static.zybuluo.com/whiledoing/0452km5iw4fcvkysr33aphij/image_1cb0utokb1noqj8v1mlj11k2pm.png
