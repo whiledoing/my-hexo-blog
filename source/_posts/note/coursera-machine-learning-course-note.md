@@ -4,7 +4,7 @@ tags: [自写,ML,AI]
 title: Coursera - Andrew Ng - Machine Learning - study notes
 ---
 
-非常好的机器学习入门教程 [Coursera - Andrew Ng - Marching Learning](https://www.coursera.org/learn/machine-learning)。记录一下我的学习笔记。
+非常好的机器学习入门教程 [Coursera - Andrew Ng - Machine Learning](https://www.coursera.org/learn/machine-learning)。记录一下我的学习笔记。
 
 课后编程作业非常有意思：[实现代码](https://github.com/whiledoing/coursera-machine-learning-course-homework)
 
