@@ -407,6 +407,155 @@ Gussian Kernel的图形类似一个帽子：
 - 数据特别多时候，SVM计算会比较耗时，可以考虑加入更多特征，使用logestic。
 - 总的说来，SVM应用场景更多，因为一般数据都没有那么多，但相比于特征又显得较多。
 
+# K mean
+
+之前讨论的都是监督学习算法，现在讨论无监督学习算法，首先讨论的是聚类算法。在没有标签数据的情况下，如何将数据进行聚类。
+
+K mean算法的优化方程是：
+
+![image_1cb3jbim51eahfbvmcdnvf1aqk9.png-139.1kB][52]
+
+其目的就是找到K个类别的中心点$\mu_k$，使得每一个数据和其对应类别的中心点距离之和最小，也就是有最好的全局内聚特性。
+
+迭代算法：
+
+![image_1cb3jhl8ogie1u321nm7pum19dbm.png-141.1kB][53]
+
+过程上有两个步骤：
+
+- 在$\mu_k$确定的情况下，计算出$c^{(i)}$，也就是对应数据的类别。这个其实很容易理解，数据的类别就是距离最近的中心点标号。
+- 在$c^{(i)}$确定情况下，也就是每个数据的判定类别确定情况下，推出使得代价$J$最小的$\mu_k$。这个也好理解，分类号的数据最好的距离加和中心点就是几何中心。
+- 之所以迭代算法可以解决该优化问题，是因为两个需要优化的参数存在相关性。都是在已知A的情况下明确的知道最好的B在哪里。
+
+初始的中心点选择很关键，选择的情况不同会导致不同的聚类结果(local optimization)。一般操作方式是：
+
+- 从数据中随机选择初始点（更能体验聚类的内耦合特性）
+- 多次执行，取最小$J$的初始点集合。
+
+另外一个问题是如何选择有效的$K$，一般而言，没有特别好的方法，主要是靠**人工的方式分析**，根据数据的特征，需求的特征来判定。一种启发性的方法是分析$K$和$J_{min}$的关系：
+
+![image_1cb3kbo1e1hb8154thhjh6d1cb513.png-67.8kB][54]
+
+如果出现明显的碗装分割点，可以选择，否则，还是要靠人为的分析。
+
+# PCA
+
+PCA主要目的在于数据降维：一方面降低了数据计算量，二方面可以用来进行可视化分析。试想，如果将数据压缩到2D或者3D，就可以直接画图来分析数据特性，更好地理解数据。
+
+PCA的核心思想是将$n$维数据映射到$k$维，使得**原始数据到映射平面的距离最小**，这样子映射数据可以更好地反映原始数据。经过数据推导，其本质是计算原始数据集协方差矩阵的特征向量：
+
+![image_1cb45up7mvsfssk12ot6lg1ff62g.png-148.4kB][55]
+
+推导过程可以参考[PCA原理总结][56]，或者[SVD原理与降维][57]。
+
+选择$k$的方式是将特征值矩阵$S$的特征值提取出来，累加求和，找到最小接近误差范围的维度：
+
+$$
+\frac {\sum_{i=1}^k S_{ii}} {\sum_{i=1}^n \S_{ii}} >= 0.99
+$$
+
+关于PCA使用的误区：
+
+- 使用PCA来降低overfit。PCA只是更好的近似了原始数据，但并不消灭导致过度拟合的高频信息。即使使用了PAC，原始数据的高频信息还在，并不是解决overfit的本质方法。而应该考虑增加数据量，或者加入regularization等方式。
+- 不管三七二十一，一上来就用PCA进行预处理。PCA应该是在原始数据不能有效计算，或者计算量过大的时候再使用，而不是不假思索的使用。
+
+使用PCA之前要先预处理数据：
+
+- 使用mean normalization（处理后，均值为0），这是算法要求。
+- 如果不同特征范围偏差较大，需要scale数据，归一化到$[-1, 1]$。（只要是数据之间进行相互融合计算，需要归一化，不然计算不在一个维度）
+
+# Anomaly Dection System
+
+Anomaly Dection是一种检测**异常**数据的算法，其核心思想是对各个可能的特征进行概率分析（高斯分布），然后结合起来考虑概率分布。
+
+假设，$m$个数据都是**正常情况**下的数据，且每个数据的$n$个特征服从高斯分布，那么新数据$x$也可能是正常组件的联合概率就是样本的极大似然估计：
+
+![image_1cb4lnvq3q4i1th9nmf1o8o1a6j2t.png-156.5kB][58]
+
+其中，$x_j \sim \mathcal{N}(\mu_j, \delta_j^2)$；将各个特征的均值和方差设为高斯分布的参数；计算未知数据的联合概率，如果$x$越正常，$p(x)$越大，说明和之前训练用的数据越相似。
+
+![image_1cb4m4r30afu13ba4c716791dat3a.png-222kB][59]
+
+高斯分布简直就是[上帝的造物哲学][60]！合并的概率分布也是高斯分布。直观的理解上面计算的结果就是：如果数据和已知标准化的数据越相似（越靠近加权平均的高斯分布中心点），说明数据越可能正常，否则，说明可能不太相似，也就是anomaly.
+
+至于偏差参数$\varepsilon$的选择，可以基于cv数据评估计算。训练数据都是正常的数据，而cv数据需要有异常数据，否则没有办法有效评估训练结果（好的数据计算得到的似然都很高，丧失了评价意义）：
+
+![image_1cb4mlmvm3mt1q293v21no31s0l3n.png-210.8kB][61]
+
+同样，因为cv数据大多数是正常的，也就是skewed数据，所以评估时不能单独考虑accuracy，而需要考虑[precision/recall](#skewed-data)：
+
+![image_1cb4nbaef340rti1bfboh219jk4k.png-152.5kB][62]
+
+这里和[上文表述的处理方式](#skewed-data)一样，都是将$y=1$认定为不容易出现数据时的类型（不过需要明确，这里其实不是使用标记好的数据，而是非监督学习算法。之所以说明这点，是为了说明True positive对应的习惯含义）。
+
+异常检测算法和监督学习的算法（一元判定）解决的问题很类似，实际使用根据应用场景来定：
+
+![image_1cb4nuga75gplppn803fv1lp85h.png-213.9kB][63]
+
+总的说来，异常检测算法更突出**异常**二字。大多数数据都是正常的，只有不多的情况是异常，或者是异常根本无法界定类别（无法打tag），甚至不知道异常长什么样子的情况下，用异常检测更直观有效。或者换个角度来讲，如果数据不能很好的展示**异常长什么样子**，监督学习算法没办法学到什么是异常，也无从判定异常。
+
+对结果的error analysis重点是分析False, Positive的情况（也就是预测不是异常，但其实是异常），这说明我们的模型觉得测试数据和正常数据挺相似，但其实存在一些我们没有考虑到的因素。
+
+![image_1cb4oep5v107s1lei1dh61op6tmu5u.png-130.5kB][64]
+
+将这种情况定性出来，添加到新的特征中。比如上图的CPU负载很高，但是网络没有负载的情况就很异常，是新的特征（may be dead for-loop）
+
+最后，课程中提到了一种全局考虑高斯分布的计算方法[Multvariant Guassian Distribution][65]，就不多加整理了。
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -491,3 +640,17 @@ Gussian Kernel的图形类似一个帽子：
   [49]: http://static.zybuluo.com/whiledoing/y4urfpa4jdge3m6vdj8u05kc/image_1cb29ps1h11891chat8i1c9d1lfo1o.png
   [50]: http://static.zybuluo.com/whiledoing/ccyuosufjc7agxz1lw69a72m/image_1cb2ajn2gioej1dp3adk01j8e9.png
   [51]: http://static.zybuluo.com/whiledoing/a25hlm6atev84jdzxn05gb00/image_1cb2apd9r1i5lfkqeb34hhhmom.png
+  [52]: http://static.zybuluo.com/whiledoing/pbh10axcsjwwprjk170vp45k/image_1cb3jbim51eahfbvmcdnvf1aqk9.png
+  [53]: http://static.zybuluo.com/whiledoing/nel8w2aahnv0qxaj88x3fu7x/image_1cb3jhl8ogie1u321nm7pum19dbm.png
+  [54]: http://static.zybuluo.com/whiledoing/51n5gxkpliy4vkiges316f4k/image_1cb3kbo1e1hb8154thhjh6d1cb513.png
+  [55]: http://static.zybuluo.com/whiledoing/odj73bvqxkpy9gq9ma300nvu/image_1cb45up7mvsfssk12ot6lg1ff62g.png
+  [56]: http://www.cnblogs.com/pinard/p/6239403.html
+  [57]: https://www.cnblogs.com/pinard/p/6251584.html
+  [58]: http://static.zybuluo.com/whiledoing/yw7wx9r5tb2b7qf2qv30n382/image_1cb4lnvq3q4i1th9nmf1o8o1a6j2t.png
+  [59]: http://static.zybuluo.com/whiledoing/emf3tsvcrhvfluohh5cl7849/image_1cb4m4r30afu13ba4c716791dat3a.png
+  [60]: https://cosx.org/2013/01/story-of-normal-distribution-1/
+  [61]: http://static.zybuluo.com/whiledoing/owff2ieiqxbmumlydm9bsc81/image_1cb4mlmvm3mt1q293v21no31s0l3n.png
+  [62]: http://static.zybuluo.com/whiledoing/4lhtww52pphgd1pd24kaxgkm/image_1cb4nbaef340rti1bfboh219jk4k.png
+  [63]: http://static.zybuluo.com/whiledoing/yv80s8kgft3gkb9exv6cukom/image_1cb4nuga75gplppn803fv1lp85h.png
+  [64]: http://static.zybuluo.com/whiledoing/439kc3r6jcjsg0cqh39l27ch/image_1cb4oep5v107s1lei1dh61op6tmu5u.png
+  [65]: https://www.coursera.org/learn/machine-learning/lecture/Cf8DF/multivariate-gaussian-distribution
