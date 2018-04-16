@@ -65,7 +65,8 @@ pagination_dir: page
 ## Plugins: https://hexo.io/plugins/
 ## Themes: https://hexo.io/themes/
 # theme: hexo-theme-yilia
-theme: hexo-theme-next
+# theme: hexo-theme-next
+theme: next
 
 # Deployment
 ## Docs: https://hexo.io/docs/deployment.html
@@ -100,9 +101,21 @@ markdown:
     - markdown-it-sup
     - markdown-it-emoji
     - markdown-it-highlightjs
+    - markdown-it-katex
   anchors:
     level: 2
     collisionSuffix: 'v'
     permalink: false
     permalinkClass: header-anchor
     permalinkSymbol: ¶
+
+markdown_it_plus:
+    highlight: true
+    html: true
+    xhtmlOut: true
+    breaks: true
+    langPrefix:
+    linkify: true
+    typographer:
+    quotes: “”‘’
+    pre_class: highlight
