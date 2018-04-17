@@ -1,5 +1,6 @@
 ---
 date: 2018/4/11 16:04:47
+mathjax: true
 tags: [自写,ML,AI]
 title: Coursera - Andrew Ng - Machine Learning - 学习笔记
 ---
@@ -266,8 +267,8 @@ $$\theta = \theta - \alpha {1 \over m} X^T(X \theta - y)$$
 
 随着训练特征参数维度的提高，训练误差是会减少的，但是不代表可以预测数据，这就要看交叉验证训练集的误差。
 
-- 当$J_{train}^{(\Theta)}$和$J_{CV}^{(\Theta)}$都很高，且数值接近时，underfit。这时候你训练的结果既不能拟合数据，也不能预测未知数据。
-- 当$J_{train}^{(\Theta)}$很小，但$J_{CV}^{(\Theta)}$很大，且远大于$J_{train}^{(\Theta)}$的时候，overfit。这时候你训练的结果可以拟合数据，但不能预测未知数据。
+- 当$J_{train}^{(\Theta)}$ 和$J_{CV}^{(\Theta)}$都很高，且数值接近时，underfit。这时候你训练的结果既不能拟合数据，也不能预测未知数据。
+- 当$J_{train}^{(\Theta)}$很小，但 $J_{CV}^{(\Theta)}$很大，且远大于$J_{train}^{(\Theta)}$的时候，overfit。这时候你训练的结果可以拟合数据，但不能预测未知数据。
 
 换另外一个形式的解读：对于regularization的参数$\lambda$进行遍历交叉验证，可以得到大致图形：
 
@@ -502,88 +503,68 @@ Anomaly Dection是一种检测**异常**数据的算法，其核心思想是对�
 
 最后，课程中提到了一种全局考虑高斯分布的计算方法[Multvariant Guassian Distribution][65]，就不多加整理了。
 
+# Recommendation System
 
+推荐系统在现实生活中很常见，比如豆瓣会推荐你可能喜欢的书籍或者电影。该系统的核心目的是：预测用户对某一物品的喜爱程度。
 
+为了更好的分析问题，先分析下输入是什么：
 
+![image_1cb6q6kff1p2nn30c0i1b951lsc9.png-203.8kB][66]
 
+输入其实有两部分:
 
+- $X \in \mathbb{R}^{n_m \times n}$表示物品的特征信息，这和线性回归的输入一样。
+- $Y \in \mathbb{R}^{n_m \times n_u}$表示每物品对应的每用户评价。不同的是这里，扩展了一个用户维度。
 
+所以这和一般的线性回归模型不一样，多了一个用户维度。第$j$个有不同的权重$\theta^{(j)}$，我们的任务就是根据这些数据计算出所有的权重，相当于计算所有的$\Theta \in \mathbb{R}^{n_m \times n}$。其实计算的方程还是$Y=X*\Theta^t$，只是中间多了一个维度而已。
 
+![image_1cb6r27js1hv21gia1rm81hehpru13.png-74.1kB][67]
 
+计算时候，将所有参数连接在一起考虑，计算过程等价于遍历$Y$矩阵，对其中所有有效的评价进行误差累加。上面的计算过程由于已经知道了商品的特征信息，所以叫做Content-base recommender systems.
 
+但可能的现实情况是根本没有商品的特征信息，而只知道$Y$和知道关系公式$Y=X*\Theta^t$，那么如何计算？答案就是全都揉在一起优化（优化的本质不就是不知道关系，只知道代价情况下去拟合关系嘛）：
 
+![image_1cb6sgqk01phs1no4sbtboh1vk63g.png-168.7kB][68]
 
+上图的优化方程就是将所有已经标记评分的误差进行累计，然后再对所有参数进行规约处理。注意上图的一个写法$\sum_{(i,j):r(i,j)=1}$，表示对所有评价了的坐标进行遍历。这种融合了几种未知数的算法叫做Collaborative filtering algorithm.
 
+个人觉得该计算方式和K mean挺相似，影响代价的相关参数之间有推导关系，所以可以合起来同时计算，也可以分开来(K mean)单独计算，两种计算方法都可以得到最优解。
 
+没有评价的数据不会影响累积误差的计算，却会因为regularization的原因，导致参数$\theta_k$趋于0（regularization项目最小）：
 
+![image_1cb7781n56a95qenjo1d361i1u4d.png-110.6kB][69]
 
+一个好的方法是对数据进行均值归一化处理，这样子，即使没有评分，算出来的参数是0，预估的评分也是0，也就是**默认的评分为当前已经评分的默认值。**
 
+![image_1cb77cu9l1lid1245ggr1rp82ud4q.png-102.5kB][70]
 
+# Using Large Datasets
 
+之前分析的所有算法在数据量很大时，计算量将非常大。因为计算的过程都需要对所有数据统一分析，计算平均信息，比如下图左边的公式：
 
+![image_1cb90sam91s6h1mf91o6b16sqv3h57.png-147.6kB][71]
 
+统一使用所有数据迭代计算的方法叫做Batch gradient descent，其时间复杂度为$O(m*n)$，这还只是一次迭代的计算复杂度，所以海量数据时，计算量很大。另外一种算法，叫做Stochastic gradient descent则是每次迭代计算**只使用一个数据计算偏导数**，相比于第一种方法有如下特点：
 
+- 每次只用一个数据计算偏导数，计算复杂度低。
+- 相比于batch全局考虑数据(求平均)计算偏导数的方法，新方法可能并不能得到全局最优解，但随着迭代次数的增加，也会不断逼近最优解。
 
+个人感觉，该算法可行的道理有点类似于**多次测量求平均值可以优化测量结果**的道理。假设我们每一个数据都存在误差（偏离真实情况），但当数据无限多时，其误差一定是呈现正态分布特性。所以当数据无限多时，我们使用平均大法来拟合结果可以得到逼近真实的解。这用来解释上面就是：当我们只使用一个数据来计算模型时，肯定有误差，但当输入数据无限多时，计算结果将会反映一种趋势。所以用无穷多数据不断迭代的结果会越来越逼近真实结果。
 
+还有一种中间形态的模型叫做Mini-batch gradient descent，就是每次使用远远小于$m的$b$个数据加权计算：
 
+![image_1cb92fvceavft1q1m811qmko9p64.png-91kB][72]
 
+当然，其计算特性也介于两者之间。$b$越大，计算量越大，精度也越高。
 
+迭代过程中，需要记录代价的变化，这可用来分析计算的收敛性。在batch计算模式中，可以计算全局的代价。但在stochastic模式中，没有办法计算全局代价，而是计算当前求解参数对下一个数据的误差代价：
 
+![image_1cb92seh6ei81sm1qr41fu0i3p6h.png-167kB][73]
 
+stochastic模式算法非常有效的一个原因是可以处理**流数据**。每一次用户的点击，每一次用户的操作行为都可以做为一次训练用户偏爱程度的迭代，这种online learning有几个好处:
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+1. 可以处理流数据，不用保存这些海量数据。
+2. 可以动态的调整计算结果。这对于模型参数可能不断变化的应用场景会更加有效。考虑，用户的口味会随着时代变化而变化。
 
 
 ---
@@ -654,3 +635,11 @@ Anomaly Dection是一种检测**异常**数据的算法，其核心思想是对�
   [63]: http://static.zybuluo.com/whiledoing/yv80s8kgft3gkb9exv6cukom/image_1cb4nuga75gplppn803fv1lp85h.png
   [64]: http://static.zybuluo.com/whiledoing/439kc3r6jcjsg0cqh39l27ch/image_1cb4oep5v107s1lei1dh61op6tmu5u.png
   [65]: https://www.coursera.org/learn/machine-learning/lecture/Cf8DF/multivariate-gaussian-distribution
+  [66]: http://static.zybuluo.com/whiledoing/lrdxd2fhszk1uphafcyg6ilj/image_1cb6q6kff1p2nn30c0i1b951lsc9.png
+  [67]: http://static.zybuluo.com/whiledoing/8dkyfq8ave0nil39abv4yxi2/image_1cb6r27js1hv21gia1rm81hehpru13.png
+  [68]: http://static.zybuluo.com/whiledoing/okyk1dy626syvre0vyp8ow2o/image_1cb6sgqk01phs1no4sbtboh1vk63g.png
+  [69]: http://static.zybuluo.com/whiledoing/f5jhfpj4p1zaopn1w66hjf0k/image_1cb7781n56a95qenjo1d361i1u4d.png
+  [70]: http://static.zybuluo.com/whiledoing/dzhjibhsdfrf08eu20w2tsrq/image_1cb77cu9l1lid1245ggr1rp82ud4q.png
+  [71]: http://static.zybuluo.com/whiledoing/136nl0a9mbz6isd5k2qi0f2m/image_1cb90sam91s6h1mf91o6b16sqv3h57.png
+  [72]: http://static.zybuluo.com/whiledoing/yzean06r44w8hk9if7g14h0s/image_1cb92fvceavft1q1m811qmko9p64.png
+  [73]: http://static.zybuluo.com/whiledoing/qpemscqvv9witq6hu3uzpeuq/image_1cb92seh6ei81sm1qr41fu0i3p6h.png
