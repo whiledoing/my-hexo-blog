@@ -1,7 +1,7 @@
 ---
 title: mongo学习笔记
 date: 2016-06-28 09:18:46
-tags: [自写,mongo]
+tags: [mongo]
 ---
 
 这是我学习[mongo](https://www.mongodb.com/)的笔记

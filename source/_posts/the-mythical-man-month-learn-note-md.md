@@ -1,7 +1,7 @@
 ---
 title: 《人月神话》读书笔记
 date: 2016-03-21 10:20:39
-tags: [自写,读书笔记,软件工程]
+tags: [读书笔记,软件工程]
 ---
 
 这是我学习[人月神话](https://www.douban.com/tag/%E8%BD%AF%E4%BB%B6%E5%B7%A5%E7%A8%8B/?focus=book)的学习笔记。

@@ -1,7 +1,7 @@
 ---
 title: 折腾vim
 date: 2016-04-22 13:13:50
-tags: [自写,vim]
+tags: [vim]
 ---
 
 这是我的vim的折腾记录。

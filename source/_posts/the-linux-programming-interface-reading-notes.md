@@ -1,7 +1,7 @@
 ---
 title: 《The Linux Programming Interface》读书笔记
 date: 2016/1/26 22:07:09
-tags: [自写,读书笔记,linux]
+tags: [读书笔记,linux]
 ---
 
 这是自己学习[the linux programming interface](http://book.douban.com/subject/4292217/)一书的读书笔记。

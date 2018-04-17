@@ -1,6 +1,6 @@
 ---
 date: 2018/3/16 20:23:24
-tags: [自写,network]
+tags: [network]
 title: 使用vps
 ---
 

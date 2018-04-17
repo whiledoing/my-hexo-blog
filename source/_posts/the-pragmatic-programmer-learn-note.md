@@ -1,7 +1,7 @@
 ---
 title: 《The Pragmatic Programmer》读书笔记
 date: 2016-02-03 14:47:32
-tags: [自写,读书笔记,软件工程]
+tags: [读书笔记,软件工程]
 ---
 
 记录了一下自己学习[The Pragmatic Programmer](http://book.douban.com/subject/1417047/)的读书笔记。

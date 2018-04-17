@@ -1,6 +1,6 @@
 ---
 title: 《鸟哥的Linux私房菜》读书笔记
-tags: [自写,读书笔记,linux]
+tags: [读书笔记,linux]
 date: 2016-03-24 11:07:05
 toc: true
 ---

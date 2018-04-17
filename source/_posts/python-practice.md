@@ -1,7 +1,7 @@
 ---
 title: python misc
 date: 2016-03-10 22:41:31
-tags: [自写,python]
+tags: [python]
 ---
 
 本文档记录了写python代码时候的一些**技巧，实践，心得**等等。

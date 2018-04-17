@@ -1,7 +1,7 @@
 ---
 title: linux-trick
 date: 2016-12-16 11:07:15
-tags: [自写,linux]
+tags: [linux]
 ---
 
 主要记录一下自己平常使用linux命令, 操作, bash等工具的一些技巧, 以备忘.
