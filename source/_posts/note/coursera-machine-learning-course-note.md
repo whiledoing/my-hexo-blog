@@ -1,7 +1,7 @@
 ---
 date: 2018/4/11 16:04:47
 mathjax: true
-tags: [自写,ML,AI]
+tags: [ML,AI]
 title: Coursera - Andrew Ng - Machine Learning - 学习笔记
 ---
 
