@@ -7,7 +7,9 @@ title: Coursera - Andrew Ng - Machine Learning - 学习笔记
 
 非常好的机器学习入门教程 [Coursera - Andrew Ng - Machine Learning](https://www.coursera.org/learn/machine-learning)。记录一下我的学习笔记。
 
-课后编程作业非常有意思：[实现代码](https://github.com/whiledoing/coursera-machine-learning-course-homework)
+课后编程作业非常有意思：[代码](https://github.com/whiledoing/coursera-machine-learning-course-homework)
+
+课件统一整理：[位置](https://github.com/whiledoing/coursera-machine-learning-course-homework/tree/master/course-lecture)
 
 <!--more-->
 
@@ -453,9 +455,7 @@ PCA的核心思想是将$n$维数据映射到$k$维，使得**原始数据到映
 
 选择$k$的方式是将特征值矩阵$S$的特征值提取出来，累加求和，找到最小接近误差范围的维度：
 
-$$
-\frac {\sum_{i=1}^k S_{ii}} {\sum_{i=1}^n \S_{ii}} >= 0.99
-$$
+$$ \frac {\sum_{i=1}^k S_{ii}} {\sum_{i=1}^n S_{ii}} >= 0.99 $$
 
 关于PCA使用的误区：
 
