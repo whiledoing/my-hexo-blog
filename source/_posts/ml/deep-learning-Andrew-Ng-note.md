@@ -30,7 +30,6 @@ PS。网易云课堂上有免费的[专业课][5]，一样的课程，而且上�
 
 ![image_1cbk9eq4khivnibo04st8o813.png-109.4kB][7]
 
-
 上图体现了微分的级联性质（分级去思考微分确实更容易理解和推导），比如：
 
 $$ da={d\mathcal{L} \over da}=-{y\over a}+{1-y \over 1-a} $$
@@ -168,7 +167,29 @@ regularization计算模型中引入两个术语：
 
 dropout regularization计算的想法是：不要依赖任何一个特征，降低权重的方差。也就是说，让权重分布的更加均匀，而不依赖于相对权重较大的特征。所以计算时，随机去掉一些节点的计算结果，让所有的节点都对最后的权值起到平均的效果。
 
-课程中说明，droupout的方法是一种regularization方法，只有在模型变得overfitting的时才考虑使用。在计算机视觉领域用droupout比较多，因为视觉领域特征非常多，所以在计算量有限的情况下，数据可能没有那么多，就需要dropout的方式来降低计算量，同时，降低权值对特征的依赖。（特征多，不希望有主次）
+<center> <video width="620" height="440" src="/videos/dropout2_kiank.mp4" type="video/mp4" controls></video> </center>
+
+课程中说明，droupout的方法是一种regularization方法，只有在模型变得overfitting的时才考虑使用。在计算机视觉领域用droupout比较多，因为视觉领域特征非常多，所以在计算量有限的情况下，数据可能没有那么多，就需要dropout的方式来降低overfit，同时，也降低权值对特征的依赖。（特征多，不希望有主次）
+
+其计算过程就是每次迭代计算的时候都随机选择节点，代码大致如下：
+
+```python
+# keep_prob参数表示保留的概率，如果是1，没有dropout，如果是0.8，0.2丢失。
+# 所以随机选择数据，小于keep_prob的保留，设置为1，其余设为0
+D = np.random.rand(A.shape[0], A.shape[1]) < keep_prob
+
+# 将数据点乘Mask的矩阵D，然后除以keep_prob，这样子得到结果近似没有dropout结果
+# 因为使用dropout数值变小，再除回来，近似原来数值
+A *= D/keep_prob
+```
+
+同样，根据导数的级联特性，正向计算时候乘以了什么系数，反向计算时候导数也需要乘以什么系数，方向计算dropout大致代码：
+
+```python
+dA *= D/keep_prob
+```
+
+需要额外说明的是，dropout只用在training set，而不用在dev/test set，主要是用在改善训练的权重系数，而dev/test使用没有意义，反而导致输出结果的随机性。
 
 ---
 
@@ -184,7 +205,7 @@ dropout regularization计算的想法是：不要依赖任何一个特征，降�
 
 如果初始权重数值比较大，那么计算的响应也会偏大，偏大的激活对应的导数比较小，梯度计算的时候下降比较慢，收敛慢。（考虑back-propagation时激活函数的导数越小，对应下降梯度越小）
 
-另一个是方差要小，这点我的理解是：在深层网络模型中，如果权重之间差异大，那么经过L层网络的放大，不同节点输出参数也比较大，进而导致收敛的维度不一样，影响收敛速度（考虑上面说normalization时贴的图）。
+另一个是方差要小，这点我的理解是：在深层网络模型中，如果权重之间差异大，那么经过L层网络的放大，不同节点输出参数也比较大，进而导致收敛的维度不一样，影响收敛速度（考虑上面说normalization时贴的图）。课程中形容这个现象叫做vanishing/exploding gradients，就是在激活数值极大和极小时，都会减低梯度的计算速度。
 
 换一个启发的理解方式——如果一个人学习一个东西，上来其掌握了大多数知识（权重大）或者存在掌握程度差异大的知识（有些学的特别好，有些特别差），人再去学习的动力就会小很多。一方面可能觉得没啥进步，一方面觉得学习边际收益太低（因为有些学的太快，学的慢的就是影响情绪）。所以，还是从一张均匀的白纸的状态出发来学习效果更好。
 
@@ -192,14 +213,10 @@ dropout regularization计算的想法是：不要依赖任何一个特征，降�
 
 ![image_1cbokft2i6nf62m2t1757g293q.png-206.4kB][24]
 
-初始化权重时，数据按照$W^{[l]} \sim \mathcal{N}(0, \sqrt{2 \over n^{[l-1]} })$分布取值（激活函数为ReLu）
-
-
-
+初始化权重时，数据按照$W^{[l]} \sim \mathcal{N}(0, \sqrt{2 \over n^{[l-1]} })$分布取值（激活函数为ReLu，这个方法叫做He Initialization）
 
 
 ---
-
 
   [1]: https://www.coursera.org/learn/machine-learning
   [2]: /2018/04/11/ml/coursera-machine-learning-course-note/
