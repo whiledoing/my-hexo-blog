@@ -30,6 +30,7 @@ PS。网易云课堂上有免费的[专业课][5]，一样的课程，而且上�
 
 ![image_1cbk9eq4khivnibo04st8o813.png-109.4kB][7]
 
+
 上图体现了微分的级联性质（分级去思考微分确实更容易理解和推导），比如：
 
 $$ da={d\mathcal{L} \over da}=-{y\over a}+{1-y \over 1-a} $$
@@ -115,7 +116,9 @@ hyperparameters vs parameters
 
 ---
 
-# Improving Deep Neural Networks: Hyperparameter tuning, Regularization and Optimization
+# Improving Deep Neural Networks
+
+## Evaluation
 
 模型评估的方法和[之前的整理][17]的差不多，下面整理内容主要是之前没有总结过或者知识结构有些变化的内容。
 
@@ -137,6 +140,8 @@ cross validation set也叫做dev set。在数据量不多时，可以按照60/20
 以前ml算法会讨论「bias and variance tradeoff」，因为以前的算法总是无法兼顾两者的数值。但是随着现在deep learning算法的兴起，在大数据和大网络的情况下，是可以兼顾bias和variance，所以现在也就不怎么提tradeoff的事情。
 
 ---
+
+## Regularization
 
 regularization计算模型中引入两个术语：
 
@@ -161,13 +166,16 @@ regularization计算模型中引入两个术语：
 
 当然regularization的作用不是将模型降维线性，而是找到中间值，去掉overfitting的成分，让结果just right
 
-另外一种regularization的方法是dropout regularization：计算节点的时候**随机去掉一些节点的结算结果**：
+另外一种regularization的方法是**dropout regularization**：计算节点时**随机去掉一些节点的结算结果**：
 
 ![image_1cboj4tcs2vhj1ekodkkb144j2j.png-105.4kB][22]
 
 dropout regularization计算的想法是：不要依赖任何一个特征，降低权重的方差。也就是说，让权重分布的更加均匀，而不依赖于相对权重较大的特征。所以计算时，随机去掉一些节点的计算结果，让所有的节点都对最后的权值起到平均的效果。
 
-<center> <video width="620" height="440" src="/videos/dropout2_kiank.mp4" type="video/mp4" controls></video> </center>
+<center>
+<video width="620" height="440" src="/videos/dropout2_kiank.mp4" type="video/mp4" controls>
+</video>
+</center>
 
 课程中说明，droupout的方法是一种regularization方法，只有在模型变得overfitting的时才考虑使用。在计算机视觉领域用droupout比较多，因为视觉领域特征非常多，所以在计算量有限的情况下，数据可能没有那么多，就需要dropout的方式来降低overfit，同时，也降低权值对特征的依赖。（特征多，不希望有主次）
 
@@ -179,7 +187,7 @@ dropout regularization计算的想法是：不要依赖任何一个特征，降�
 D = np.random.rand(A.shape[0], A.shape[1]) < keep_prob
 
 # 将数据点乘Mask的矩阵D，然后除以keep_prob，这样子得到结果近似没有dropout结果
-# 因为使用dropout数值变小，再除回来，近似原来数值
+# 因为使用dropout数值变小，再除回来，近似原来数值，这个过程叫做**inverted dropout**
 A *= D/keep_prob
 ```
 
@@ -191,11 +199,17 @@ dA *= D/keep_prob
 
 需要额外说明的是，dropout只用在training set，而不用在dev/test set，主要是用在改善训练的权重系数，而dev/test使用没有意义，反而导致输出结果的随机性。
 
----
+## Optimization
+
+所谓优化，就是用最少的计算得到最好的下降路径：
+
+![image_1cbpf2kfiqv21cou13o018q61eeo9.png-411.3kB][23]
+
+### Initialization
 
 对数据进行normalization处理（中值为0，方差为1）可以提高算法运行速度：
 
-![image_1cbojoo4b1alc1euu1om51i621l1c3d.png-195.9kB][23]
+![image_1cbojoo4b1alc1euu1om51i621l1c3d.png-195.9kB][24]
 
 数据维度不同时，梯度下降的数值也变得不在一个级别上，进而影响下降速度。
 
@@ -211,12 +225,81 @@ dA *= D/keep_prob
 
 经验的计算方法：
 
-![image_1cbokft2i6nf62m2t1757g293q.png-206.4kB][24]
+![image_1cbokft2i6nf62m2t1757g293q.png-206.4kB][25]
 
 初始化权重时，数据按照$W^{[l]} \sim \mathcal{N}(0, \sqrt{2 \over n^{[l-1]} })$分布取值（激活函数为ReLu，这个方法叫做He Initialization）
 
+### Mini-batch Gradient descent
+
+关于mini-batch，在之前的[文章][26]中也整理过，其本质就是将数据分片进行训练，迭代。
+
+![image_1cbpf5r8k1e2t24p1ejn1arv17eum.png-151.1kB][27]
+
+![image_1cbpf7gsh14sg6jrarj95j1gmt1j.png-99.9kB][28]
+
+如果只使用一个数据训练，叫做SGD，stochastic gradient descent，下降的噪声比较大。如果全局运算，叫做batch gradient descent，速度慢。所以mini-batch的效果居于两者之间。在大数据深度学习领域，基本都是mini-batch。
+
+每一次迭代完所有的数据叫做epoch；使用2的倍数作为分片的大小。
+
+### Gradient descent with Momentum
+
+先介绍一种对时间序列数据去噪的方法Exponentially Weighted Avarages：
+
+![image_1cbpfv6tq1ufrsklfmc1opdgoa20.png-213.7kB][29]
+
+其中，$\theta_t$表示t时刻的数据，$v_t$表示t时刻**指数加权的数据**，参数$\beta$说明了加权的系数。稍加推导可以得到
+
+$$\sum_{i=0}^{t}{\beta^{t-i}{(1-\beta)}\theta_i}$$
+
+之所以叫做指数加权，是因为越远离t的数据影响系数指数递减。$v_t$约由前$1 \over {1-\beta}$个时刻的数据加权得到结果，因为到后面的影响就微乎其微了。故$\beta$越大，数据越平滑。
+
+上述公式存在一个问题——初始计算的前几个节点因为没有之前数据可以加权，所以计算结果比较小。而一旦过了启动阶段，就没有问题。考虑图中紫色的线。解决方法是对数据进行校正：
+
+$$v_t^{corrected} = {v_t \over {1-\beta^t}}$$
+
+将这个概念引入梯度计算过程中，可以过滤掉因为mini-batch所导致的噪声：
+
+![image_1cbph9agsv6g1obemg87bl1foa2d.png-217kB][30]
+
+$$ \begin{cases}
+v_{dW^{[l]}} = \beta v_{dW^{[l]}} + (1 - \beta) dW^{[l]} \\
+W^{[l]} = W^{[l]} - \alpha v_{dW^{[l]}}
+\end{cases}$$
+
+$$\begin{cases}
+v_{db^{[l]}} = \beta v_{db^{[l]}} + (1 - \beta) db^{[l]} \\
+b^{[l]} = b^{[l]} - \alpha v_{db^{[l]}} 
+\end{cases}$$
+
+可以用物理学的冲量概念来辅助理解，当施加一个新的加速度时，加速度不会瞬间改变速度方向而是和之前速度进行融合。
+
+### Adam optimization algorithm
+
+另外一个规约梯度的方法是对数据的平方进行指数加权，叫做RMSprop。
+
+Adam算法将momentum和RMSprop结合起来一起优化：
+
+$$\begin{cases}
+v_{dW^{[l]}} = \beta_1 v_{dW^{[l]}} + (1 - \beta_1) \frac{\partial \mathcal{J} }{ \partial W^{[l]} } \\
+v^{corrected}_{dW^{[l]}} = \frac{v_{dW^{[l]}}}{1 - (\beta_1)^t} \\
+s_{dW^{[l]}} = \beta_2 s_{dW^{[l]}} + (1 - \beta_2) (\frac{\partial \mathcal{J} }{\partial W^{[l]} })^2 \\
+s^{corrected}_{dW^{[l]}} = \frac{s_{dW^{[l]}}}{1 - (\beta_2)^t} \\
+W^{[l]} = W^{[l]} - \alpha \frac{v^{corrected}_{dW^{[l]}}}{\sqrt{s^{corrected}_{dW^{[l]}}} + \varepsilon}
+\end{cases}$$
+
+经验上，设置$\beta1=0.9$，$\beta2=0.999$。参数$\epsilon$是为了保证分母不为0，一般设为1e-8。
+
+直观上理解该算法就是对$dw$进行降噪，将数据变得平滑，同时对运动幅度进行修正。数学公式上看，又像是对数据进行normalization。
+
+### Learning rate decay
+
+$\lambda$是最主要调的hyperparameter之一。在开始阶段，梯度下降较快，但到了迭代后期，数据已经接近最优解，如果$\lambda$还是过大，可能影响收敛。基于这个思路，当迭代到后期时，缩小$\lambda$
+
+$$\lambda = {1 \over {1+{decay\_rate}*{epoch\_num}}}$$
+
 
 ---
+
 
   [1]: https://www.coursera.org/learn/machine-learning
   [2]: /2018/04/11/ml/coursera-machine-learning-course-note/
@@ -240,5 +323,13 @@ dA *= D/keep_prob
   [20]: http://static.zybuluo.com/whiledoing/9jaijdjoi2e9k5s7lyzpb9ql/image_1cbo7mg97rvj4qdtv216mo1p9.png
   [21]: http://static.zybuluo.com/whiledoing/gaqcg9cfx6pea3eyn4c4mnqo/image_1cbo7uit316egjs39kr3jq17oa1m.png
   [22]: http://static.zybuluo.com/whiledoing/d88fwrw4a8ucigfzh16mh3sm/image_1cboj4tcs2vhj1ekodkkb144j2j.png
-  [23]: http://static.zybuluo.com/whiledoing/scgnkz6swme7ugekusawb04p/image_1cbojoo4b1alc1euu1om51i621l1c3d.png
-  [24]: http://static.zybuluo.com/whiledoing/ojeb0o2fk6ebol3foacrjy5f/image_1cbokft2i6nf62m2t1757g293q.png
+  [23]: http://static.zybuluo.com/whiledoing/lsyvu3ql36syfsit9gfjappb/image_1cbpf2kfiqv21cou13o018q61eeo9.png
+  [24]: http://static.zybuluo.com/whiledoing/scgnkz6swme7ugekusawb04p/image_1cbojoo4b1alc1euu1om51i621l1c3d.png
+  [25]: http://static.zybuluo.com/whiledoing/ojeb0o2fk6ebol3foacrjy5f/image_1cbokft2i6nf62m2t1757g293q.png
+  [26]: /2018/04/11/ml/coursera-machine-learning-course-note/#using-large-datasets
+  [27]: http://static.zybuluo.com/whiledoing/uubv2at389otlp95lcp8omi0/image_1cbpf5r8k1e2t24p1ejn1arv17eum.png
+  [28]: http://static.zybuluo.com/whiledoing/rog7tie0r5ymolgjxjlzlg72/image_1cbpf7gsh14sg6jrarj95j1gmt1j.png
+  [29]: http://static.zybuluo.com/whiledoing/wfudzoancvtvzc4rl123kwsk/image_1cbpfv6tq1ufrsklfmc1opdgoa20.png
+  [30]: http://static.zybuluo.com/whiledoing/iy6ghf6kwpf4ba6s9hcc4go4/image_1cbph9agsv6g1obemg87bl1foa2d.png
+  [31]: http://static.zybuluo.com/whiledoing/kxx35v8gx7e33e9n88yl6l0m/image_1cbpho9hgs8k14qp1hap149k68h2q.png
+  [32]: http://static.zybuluo.com/whiledoing/yg2kev4vj5dy5dsb3jrq7bvt/image_1cbphrvl193b6l1109jv9t18e137.png
