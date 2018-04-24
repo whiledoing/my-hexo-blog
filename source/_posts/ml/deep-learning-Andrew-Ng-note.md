@@ -348,7 +348,31 @@ softmax的输出结果就是$\hat{y}$，用来统计最后的loss：
 
 ![image_1cbre3l0716i076214ectchkja6i.png-204.1kB][36]
 
+# Structuring Machine Learning Projects
 
+## ML Strategy
+
+这里说的很多内容和之前课程中学到的[内容][17]差不多，就是如何评估你的模型，如何进行模型的比较和结果的分析。
+
+一个大的指导原则是：正交化（orthogonalization）。每次调整方法只影响结果的一个方面，而不是一次调整多个。
+
+另外就是要建立评估矩阵（evaluation matrics），将相关影响的指标都列出来，但最重要的是建立one single value的评价指标，该指标可以综合所有评价因素的权重。单一的指标的目的是可以更直观和快速的比较出结果好坏。
+
+dev和test的集合需要分布同源。这点上文提到过，同源才可以保证目标一致。用dev调整的目标和test是一样的，否则用dev优化了半天，到test发现目标就错了。dev/test数据集合还需要包含可预估到的未来实际应用场景数据，这样子训练的模型才能更好的扩展到真实应用场景。
+
+另外说到很多的一点就是评估人类的表现（human-level performance），这点对于分析模型的结果有很大的意义。
+
+先说明一个概念——模型所能达到的理论最低误差叫做Bayes (optimal) error，我们训练模型的误差不可能低于Bayes error，但却有可能高于human error。但一般而言，在我们的模型没有超过人类之前，会将人类误差近似认为成Bayes error来进行模型分析：
+
+![image_1cbrpccuh7i52sm1m81790hct7c.png-158.1kB][37]
+
+考虑猫识别问题，如果人类识别猫的误差是1%，那么8%的training error明显就比较大，两者的差值叫做「avoidable bias」。因为有7%的avoidable error，所以需要先解决bias的问题，因为我们的模型离人类的标准都还差不少。但如果hunman error是7.5%，那么虽然training eror有8%，但我们更应该优先解决variance。human error是误差分析的基准。
+
+下图说明了消除相关误差(bias/variance)的主要方法：
+
+![image_1cbrqgrnq7pr1j76fep8cts3p86.png-46.6kB][38]
+
+最后需要说明的是，在deep ml的一些领域（尤其是数据更加结构化的问题领域），机器学习已经超过了人类。:cry:
 
 
 ---
@@ -390,3 +414,5 @@ softmax的输出结果就是$\hat{y}$，用来统计最后的loss：
   [34]: http://static.zybuluo.com/whiledoing/p42t7kxescioq84t6j04ns2x/image_1cbrdinvm65ofmn1k9e1jbq9j65o.png
   [35]: http://static.zybuluo.com/whiledoing/js89ocqevam5joxvy47uljog/image_1cbrdsdke9rn10s01ki8tcb1fcj65.png
   [36]: http://static.zybuluo.com/whiledoing/z7gdskms5rfou8secimvh1tj/image_1cbre3l0716i076214ectchkja6i.png
+  [37]: http://static.zybuluo.com/whiledoing/1qlldsme3u36md0vwvo2uaxv/image_1cbrpccuh7i52sm1m81790hct7c.png
+  [38]: http://static.zybuluo.com/whiledoing/4nls7jr0b0ahis0uhmjzywm9/image_1cbrqgrnq7pr1j76fep8cts3p86.png
