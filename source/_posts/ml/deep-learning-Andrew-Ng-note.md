@@ -270,7 +270,7 @@ W^{[l]} = W^{[l]} - \alpha v_{dW^{[l]}}
 
 $$\begin{cases}
 v_{db^{[l]}} = \beta v_{db^{[l]}} + (1 - \beta) db^{[l]} \\
-b^{[l]} = b^{[l]} - \alpha v_{db^{[l]}} 
+b^{[l]} = b^{[l]} - \alpha v_{db^{[l]}}
 \end{cases}$$
 
 可以用物理学的冲量概念来辅助理解，当施加一个新的加速度时，加速度不会瞬间改变速度方向而是和之前速度进行融合。
@@ -472,19 +472,73 @@ end-to-end learning是指直接将输入和输出建立映射关系的学习，�
 
 所以，总结一下end-to-end模式的优缺点：
 
-Pro:
-
-- 数据自我表达内部逻辑。
-- 更少人为设计的步骤。
-
-Con:
-
-- 需要足够多的数据才有更好效果。
-- 缺少可能有用的人类领域经验知识。
+|Pro|Con|
+|:-:|:-:|
+|数据自我表达内部逻辑。| 更少人为设计的步骤。|
+|需要足够多的数据才有更好效果。| 缺少可能有用的人类领域经验知识。 |
 
 换个角度考虑，机器学习的本质是通过数据获取知识。一种知识是无行为模式的，通过足够多的数以训练得到；另外一种知识是有行为模式的，是人类经验的延伸，利用这种知识可以加速机器学习的过程。所以综合而言，关键问题是**是否有足够多的数据**。
 
 其实在复杂的ml领域，都是混合使用end-to-end和hand-designing components两种模式。
+
+# Convolutional Neural Networks
+
+## Concept of CNN
+
+卷积操作在计算机视觉领域用的非常多，其核心是用一个$f \times f$大小的方块filter/kernel对图像块状区域进行加权运算，进而提取图像高阶特征：
+
+![Convolution_schematic.gif-63.6kB][56]
+
+卷积操作中有一个控制参数：
+
+- $f$表示卷积大小，一般是奇数
+- $p$表示填充大小，不填充数据的话，卷积会越算越小，同时去掉了边缘的信息。
+- $s$表示每次操作移动大小，默认为1。
+- 卷积操作之后的长度为$\lfloor{{n+2p-f \over s} + 1}\rfloor$
+
+将卷积操作做为提取特征的核心操作，类比到神经网络模型中，就得到了卷积神经网络。
+
+在CNN中，filter是有第三维度的，加做channel，该channel的大小就等于上一层输入的节点数（类比于NN中的$W$第一维度是上层节点个数），然后将各个channel的filter和上一层节点数据依次运算，最后加权统一，得到本层的**一个特征**。比如下图就是对原始输入矩阵(R,G,B三个通道)数据进行一次卷积操作，得到新的特征：
+
+![image_1cbuidcbbscnep8ujgj351mc2lv.png-150.5kB][50]
+
+如果使用多个filter，就可以得到本层的N个特征：
+
+![image_1cbuidmfb1b3k1ucu1qu21p3l1bsfmc.png-151.9kB][51]
+
+其操作过程动画展示如下：
+
+<center><video width="620" height="440" src="/videos/conv_kiank.mp4" type="video/mp4" controls></video></center>
+
+CNN中符号说明（试用了一下印象笔记的文档扫描功能，很赞）：
+
+![Evernote Snapshot 20180425 215537.png-212.5kB][52]
+
+上面介绍的网络在CNN中叫做Convolutional Layer（卷积网络）。另外还有两种形式的Layer，一个叫做Pooling Layer：
+
+![image_1cbui79q97m4iuk15cfsid16l9li.png-107.7kB][53]
+
+Pooling Layer对每一个channel数据分别处理，提取最大值（均值，用的比较少），或者换个理解，提取最大特征，同时降维数据。所以pool layer和conv layer不一样，没有参数（只有hypterparameter，卷积用的filter/padding/stride size），同时，是对每一个channel单独处理，不改变输入数据的个数。
+
+还有一个layer叫做Fully Connected layer(FC)，就是原来的神经网络模型，没有卷积运算，直接的权重矩阵W进行映射，一般用在网络的最后阶段，使用softmax输出类别。
+
+所以，综合起来，一个CNN模型的例子：
+
+![image_1cbujeov31q2m1bn87g913fte7pn6.png-165.5kB][54]
+![image_1cbujllnsen81r4mom164b13kjnj.png-121.3kB][55]
+
+一般而言，CNN的模式是在前几层将图像维度缩小（提取更抽象信息），同时，提高特征个数（高阶特征）。
+
+至于为啥CNN有效，课程中说是有两点：1）parameter sharing，如果一个filter对图像的局部有效，可能也对全局有效 2）sparsity of connections，权重矩阵变小了很多，比NN节点之间连接矩阵小太多。
+
+而我个人理解，可能CNN更好得模拟了大脑处理视觉的模式（个人理解）：
+
+- 大脑对图像是扫描分析的，一块一块扫描，然后得到全局信息。
+- 扫描完成后，对图像的点，线，面进行拆分，组装，定位目标。
+- 定位后然后识别，理解。
+
+我理解CNN就是在模拟这个过程。最有趣的部分就是将filter变成参数求解，相比于以前的视觉算法都是**手工调教**参数。人脑对于模式的识别，应该是非常灵活的，目标导向且自适应的，可后期训练的。所以CNN的模式确实更像人类一些。
+
 
 ---
 
@@ -538,3 +592,10 @@ Con:
   [47]: http://static.zybuluo.com/whiledoing/16djj0l616meyhnm0c1eysqb/image_1cbtfs2p5uragnk17mb5gi1mepfb.png
   [48]: http://static.zybuluo.com/whiledoing/jxjk5itor79t4706ugd05py6/image_1cbto7ltdnou4nm1iic2dplui8.png
   [49]: http://static.zybuluo.com/whiledoing/3qepvni8isycba1c4w8yd5bf/image_1cbtof8191d5bpe91p0h1ts1uc6k5.png
+  [50]: http://static.zybuluo.com/whiledoing/4zqe8tl59egq5qx74t44pn3p/image_1cbuidcbbscnep8ujgj351mc2lv.png
+  [51]: http://static.zybuluo.com/whiledoing/zb3erz2whbhro9us203vjadz/image_1cbuidmfb1b3k1ucu1qu21p3l1bsfmc.png
+  [52]: http://static.zybuluo.com/whiledoing/zzo14jmcel00rqhqdorlug5k/Evernote%20Snapshot%2020180425%20215537.png
+  [53]: http://static.zybuluo.com/whiledoing/7vy9tpz380uuu1tzkm9j6279/image_1cbui79q97m4iuk15cfsid16l9li.png
+  [54]: http://static.zybuluo.com/whiledoing/a83u3qjo7hd16h7p1z4ajhe2/image_1cbujeov31q2m1bn87g913fte7pn6.png
+  [55]: http://static.zybuluo.com/whiledoing/ndc8gbxsy0rcel10vysh82j2/image_1cbujllnsen81r4mom164b13kjnj.png
+  [56]: http://static.zybuluo.com/whiledoing/bcdat9ykomleqmkfrng9k2oo/Convolution_schematic.gif
