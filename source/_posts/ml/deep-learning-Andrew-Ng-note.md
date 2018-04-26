@@ -487,7 +487,7 @@ end-to-end learning是指直接将输入和输出建立映射关系的学习，�
 
 卷积操作在计算机视觉领域用的非常多，其核心是用一个$f \times f$大小的方块filter/kernel对图像块状区域进行加权运算，进而提取图像高阶特征：
 
-![Convolution_schematic.gif-63.6kB][56]
+![Convolution_schematic.gif-63.6kB][50]
 
 卷积操作中有一个控制参数：
 
@@ -500,11 +500,11 @@ end-to-end learning是指直接将输入和输出建立映射关系的学习，�
 
 在CNN中，filter是有第三维度的，加做channel，该channel的大小就等于上一层输入的节点数（类比于NN中的$W$第一维度是上层节点个数），然后将各个channel的filter和上一层节点数据依次运算，最后加权统一，得到本层的**一个特征**。比如下图就是对原始输入矩阵(R,G,B三个通道)数据进行一次卷积操作，得到新的特征：
 
-![image_1cbuidcbbscnep8ujgj351mc2lv.png-150.5kB][50]
+![image_1cbuidcbbscnep8ujgj351mc2lv.png-150.5kB][51]
 
 如果使用多个filter，就可以得到本层的N个特征：
 
-![image_1cbuidmfb1b3k1ucu1qu21p3l1bsfmc.png-151.9kB][51]
+![image_1cbuidmfb1b3k1ucu1qu21p3l1bsfmc.png-151.9kB][52]
 
 其操作过程动画展示如下：
 
@@ -512,11 +512,11 @@ end-to-end learning是指直接将输入和输出建立映射关系的学习，�
 
 CNN中符号说明（试用了一下印象笔记的文档扫描功能，很赞）：
 
-![Evernote Snapshot 20180425 215537.png-212.5kB][52]
+![Evernote Snapshot 20180425 215537.png-212.5kB][53]
 
 上面介绍的网络在CNN中叫做Convolutional Layer（卷积网络）。另外还有两种形式的Layer，一个叫做Pooling Layer：
 
-![image_1cbui79q97m4iuk15cfsid16l9li.png-107.7kB][53]
+![image_1cbui79q97m4iuk15cfsid16l9li.png-107.7kB][54]
 
 Pooling Layer对每一个channel数据分别处理，提取最大值（均值，用的比较少），或者换个理解，提取最大特征，同时降维数据。所以pool layer和conv layer不一样，没有参数（只有hypterparameter，卷积用的filter/padding/stride size），同时，是对每一个channel单独处理，不改变输入数据的个数。
 
@@ -524,8 +524,8 @@ Pooling Layer对每一个channel数据分别处理，提取最大值（均值，
 
 所以，综合起来，一个CNN模型的例子：
 
-![image_1cbujeov31q2m1bn87g913fte7pn6.png-165.5kB][54]
-![image_1cbujllnsen81r4mom164b13kjnj.png-121.3kB][55]
+![image_1cbujeov31q2m1bn87g913fte7pn6.png-165.5kB][55]
+![image_1cbujllnsen81r4mom164b13kjnj.png-121.3kB][56]
 
 一般而言，CNN的模式是在前几层将图像维度缩小（提取更抽象信息），同时，提高特征个数（高阶特征）。
 
@@ -539,8 +539,44 @@ Pooling Layer对每一个channel数据分别处理，提取最大值（均值，
 
 我理解CNN就是在模拟这个过程。最有趣的部分就是将filter变成参数求解，相比于以前的视觉算法都是**手工调教**参数。人脑对于模式的识别，应该是非常灵活的，目标导向且自适应的，可后期训练的。所以CNN的模式确实更像人类一些。
 
+## CNN Architecture
 
+抽象来说，NN学习的就是知识。知识分两种：一种来自于数据，一种来自于人类经验模型。理论上说，在数据足够多（相对于问题的复杂程度），计算能力足够大时，最好的模型不需要人为干预，直接通过数据获得知识。但在数据不多，计算能力不够时，就需要人为干预模型来提高学习速度，提高学习效果。
 
+### VGG - 16
+
+![image_1cc0mqv8dra51nql16831jlq83i4g.png-167.8kB][57]
+
+这个模型比较早，比价有意思的是，每一层计算后，图像长和宽都缩小一倍，但特征多了一倍，有非常统一的模型结构。
+
+### ResNet
+
+在ResNet出现之前，训练深层次网络存在一个巨大的问题：vanishing gradients。就是随着数据的迭代，权重越来越小，backprop计算时，梯度会越来越小（梯度需要乘以权重，而权重越来越小，在经过多层网络的计算后，梯度呈指数缩小），梯度缩小就会导致训练越来越慢：
+
+![image_1cc0ola5e1efq199e1qsvnp1rbhl.png-225.4kB][58]
+
+ResNet核心思路是构造「skip connection」，在原有的连接基础上，构造短路（shortcut）的连接：
+
+![Evernote Snapshot 20180426 182650.png-498kB][59]
+
+短路之后有个特性，如果中间节点的权重系数为0，那么L+2层的输出就是L层的输出，这几个网络构成了一个Identity Layer。
+
+我个人理解ResNet可以有效工作的原因画在了上图中。特征的抽象层次肯定不会完全相同，有的特征维度高，有的维度低。如果网络特别深，会导致低维度特征还没运行到最后一层就已经最优收敛，之后再计算反而导致overfitting。但如果网络不深，高维度特征又不收敛。所以我觉得ResNet干的就是这个事情：**让低纬度特征计算放缓，等着高纬度特征一起收敛。**（shortcut导致中间的计算都没有用，等价于放缓速度。）
+
+### Inception network
+
+Inception网络如其字面意思，可以自我「感知」计算，就是自动计算出hypoparameters。既然模型的filter尺寸需要人为设定，存在不确定性。那么干脆直接遍历几个常用尺寸得到的结果，都将其放到网络中计算，让系统自动「感知」。
+
+![image_1cc096epo1bj61qe91o651ub419sp.png-115.1kB][60]
+
+越自动，越需要数据，越需要计算量。inception用了一个方法（调整网络模型）来降低计算复杂度：
+
+![image_1cc09lq78c4je7a1h2mdoa162g16.png-76.7kB][61]
+![image_1cc09n7101dfh5qp142b1joj16i933.png-108.7kB][62]
+
+其核心就是将数据先经过一个$1\times1$的卷积网络，降低channel深度，然后在执行后续运算。我个人理解$1\times1$的卷积目的就是对原始数据进行**整理，归档**，将类似的数据整理归类到更小的类别中，然后降低计算量。
+
+学完这节课，我的感受就是，这些模型用到的magical number简直就是科学的艺术，艺术的科学，神奇的1b.
 
 
 ---
@@ -595,10 +631,16 @@ Pooling Layer对每一个channel数据分别处理，提取最大值（均值，
   [47]: http://static.zybuluo.com/whiledoing/16djj0l616meyhnm0c1eysqb/image_1cbtfs2p5uragnk17mb5gi1mepfb.png
   [48]: http://static.zybuluo.com/whiledoing/jxjk5itor79t4706ugd05py6/image_1cbto7ltdnou4nm1iic2dplui8.png
   [49]: http://static.zybuluo.com/whiledoing/3qepvni8isycba1c4w8yd5bf/image_1cbtof8191d5bpe91p0h1ts1uc6k5.png
-  [50]: http://static.zybuluo.com/whiledoing/4zqe8tl59egq5qx74t44pn3p/image_1cbuidcbbscnep8ujgj351mc2lv.png
-  [51]: http://static.zybuluo.com/whiledoing/zb3erz2whbhro9us203vjadz/image_1cbuidmfb1b3k1ucu1qu21p3l1bsfmc.png
-  [52]: http://static.zybuluo.com/whiledoing/zzo14jmcel00rqhqdorlug5k/Evernote%20Snapshot%2020180425%20215537.png
-  [53]: http://static.zybuluo.com/whiledoing/7vy9tpz380uuu1tzkm9j6279/image_1cbui79q97m4iuk15cfsid16l9li.png
-  [54]: http://static.zybuluo.com/whiledoing/a83u3qjo7hd16h7p1z4ajhe2/image_1cbujeov31q2m1bn87g913fte7pn6.png
-  [55]: http://static.zybuluo.com/whiledoing/ndc8gbxsy0rcel10vysh82j2/image_1cbujllnsen81r4mom164b13kjnj.png
-  [56]: http://static.zybuluo.com/whiledoing/bcdat9ykomleqmkfrng9k2oo/Convolution_schematic.gif
+  [50]: http://static.zybuluo.com/whiledoing/bcdat9ykomleqmkfrng9k2oo/Convolution_schematic.gif
+  [51]: http://static.zybuluo.com/whiledoing/4zqe8tl59egq5qx74t44pn3p/image_1cbuidcbbscnep8ujgj351mc2lv.png
+  [52]: http://static.zybuluo.com/whiledoing/zb3erz2whbhro9us203vjadz/image_1cbuidmfb1b3k1ucu1qu21p3l1bsfmc.png
+  [53]: http://static.zybuluo.com/whiledoing/zzo14jmcel00rqhqdorlug5k/Evernote%20Snapshot%2020180425%20215537.png
+  [54]: http://static.zybuluo.com/whiledoing/7vy9tpz380uuu1tzkm9j6279/image_1cbui79q97m4iuk15cfsid16l9li.png
+  [55]: http://static.zybuluo.com/whiledoing/a83u3qjo7hd16h7p1z4ajhe2/image_1cbujeov31q2m1bn87g913fte7pn6.png
+  [56]: http://static.zybuluo.com/whiledoing/ndc8gbxsy0rcel10vysh82j2/image_1cbujllnsen81r4mom164b13kjnj.png
+  [57]: http://static.zybuluo.com/whiledoing/0kkhajr4yadwtrae03ax6axa/image_1cc0mqv8dra51nql16831jlq83i4g.png
+  [58]: http://static.zybuluo.com/whiledoing/0p9kqjd9sl5dvpni3lbdj33a/image_1cc0ola5e1efq199e1qsvnp1rbhl.png
+  [59]: http://static.zybuluo.com/whiledoing/sirtthyilcuv3cx0mjzqh6of/Evernote%20Snapshot%2020180426%20182650.png
+  [60]: http://static.zybuluo.com/whiledoing/a6nxvjxtv7xhmfd1xrolc9h2/image_1cc096epo1bj61qe91o651ub419sp.png
+  [61]: http://static.zybuluo.com/whiledoing/ycm4g46twno8ee444loelecp/image_1cc09lq78c4je7a1h2mdoa162g16.png
+  [62]: http://static.zybuluo.com/whiledoing/x0r3gmk84oj7t1ntf5bgivp4/image_1cc09n7101dfh5qp142b1joj16i933.png
