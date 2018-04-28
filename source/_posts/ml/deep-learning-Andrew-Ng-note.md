@@ -689,6 +689,77 @@ Face Recognition和Face Varification不一样。后者是已知判定信息情�
 
 说白了，就是去掉阈值的手动调教过程，而是计算机自己去拟合。
 
+# Sequence Models
+
+## Recurrent Neural Networks
+
+RNN是一种处理时序数据的网络模型。考虑之前学到的网络都是一次性输入所有数据，最后得到结果。但对于时序数据而言，每次输入的数据甚至都不能一次性获得（考虑语音识别，不可能等话说完再去识别），而是连续的数据流，且数据之间有很想的时序相关性。RNN模型本身就体现了一种连续的时序概念，一个基本的RNN模型如下：
+
+![image_1cc58cvfccpl13gj14le1gep40699.png-32.6kB][79]
+
+其特点：
+
+- 数据按照时间坐标$<t>$切片
+- 数据按照时间顺序多次输入
+- 上一层的输出结果会传递到下一层，用来拟合数据之间时序相关性。
+- 每一层都可以有输出预估（根据引用场景具体会不同）
+
+一个最基本的RNN Cell单元构造如下：
+
+![image_1cc58ievt4u31og410cl1ahjvft9m.png-30.7kB][80]
+
+其本质就是将当前的输入和上一层的响应加权，然后计算得到本层相应和预估。（当然$\hat y^{<t>}$的输出不一定就是softmax，根据应用场景而定）
+
+![image_1cc58oaf51fvta8kkra1nmpbhga3.png-102.9kB][81]
+
+级联的RNN Cell结构如图：
+
+![image_1cc58qcofhme1v8h1f9llmid5nag.png-116kB][82]
+
+一般计算时，对$T_x$时间切片进行遍历，每一次循环处理一个时刻数据和预估（因为每一次有预估就会有cost的计算），然后将数据结果cache到下一层。
+
+基本的RNN Cell存在两个问题：
+
+- 容易导致gradient valishing
+- 时间靠后的数据很难被时间靠前的影响（层级相差很大）
+
+时间序列的夸时间影响还是有实际意义的。比如我们说下面的句子：
+
+> The cat, which ...., was ...
+> The cats, which ....., were...
+
+语义上，后面数据要受到很久之前数据的影响。Long Short-Term Memoery(LSTM) network用来解决这个问题（不是很懂，简单整理。 @TODO）：
+
+![image_1cc58svl481re28bhsla3hvfat.png-30.7kB][83]
+![image_1cc58t81i1ndr1mnc76m91frh1ba.png-102.9kB][84]
+
+我理解本质是引入了$c^{<t>}$这个通路（类似于ResNet的通路），将很久的数据按照逻辑保存下来，进而可以对后续节点产生可观的影响。
+
+推荐一个[介绍RNN非常好的博文][85]。
+
+## Application of RNN
+
+这里主要记录课后作业的两个项目：作曲和作文章。
+
+计算机学习编曲其实就是让计算机建立一种乐感，这个乐感就是在听了一个key之后（当然实际建模需要考虑很多因素，比如时值，和弦等，这里简化说明），再联系之前的key list，根据概率计算出下一个key。
+
+这里有两个过程，一个是训练，一个是Sampling。
+
+![image_1cc5a96f0qmb1hjouqvcrc1gipbn.png-139.3kB][86]
+
+上图说明了Sampling的过程。初始输入类似于音乐中确定「调式」，然后计算机算出下一个音符（softmax的最大值，或者按照概率采样，这样子作曲更随机），然后将**该音符作为下一层的输入**，依次连续谱曲。interesting。
+
+训练的过程就是反向思考上述过程，将一段音乐放入到输入位置，而每次比较的$y$其实是错位的$x$，也就是$y^{<t-1>} = x^{<t>}$，最后一层的$y=end tag$，表示结束标识。学习的目的就是在知道输入后推算出下一个输出是啥。这就是对「乐感」建模了。
+
+贴一下生成的结果，其实听起来怪怪的，不过挺有意思：
+
+<center>
+<audio src="/music/rnn_improvise_jazz.mp3" controls> </audio>
+<p>rnn_improvise_jazz.mp3</p>
+</center>
+
+参考项目: [deepjazz][87][keras-example: lstm_text_generation][88]
+
 ---
 
 
@@ -770,3 +841,13 @@ Face Recognition和Face Varification不一样。后者是已知判定信息情�
   [76]: http://static.zybuluo.com/whiledoing/4zhopfbpic3szeerr6pj8xne/image_1cc36uou0nm4131qdnuetn21h75.png
   [77]: http://static.zybuluo.com/whiledoing/w8500thg7jxeoasvh9ll70e5/image_1cc3782spoc1ltsogc1941lml8f.png
   [78]: http://static.zybuluo.com/whiledoing/p63ronbesl9fqmmf2d57ptl9/image_1cc37d4uo1kbu1hih1n6t1kfi1p9c8s.png
+  [79]: http://static.zybuluo.com/whiledoing/w1u3vrakbnxf92ne2555o7r7/image_1cc58cvfccpl13gj14le1gep40699.png
+  [80]: http://static.zybuluo.com/whiledoing/nywse57lcoer3yjquqsu0wet/image_1cc58ievt4u31og410cl1ahjvft9m.png
+  [81]: http://static.zybuluo.com/whiledoing/t5bcx44ajmpl73cdrheiyjww/image_1cc58oaf51fvta8kkra1nmpbhga3.png
+  [82]: http://static.zybuluo.com/whiledoing/zidn4q12yq86tbzok6tmk6or/image_1cc58qcofhme1v8h1f9llmid5nag.png
+  [83]: http://static.zybuluo.com/whiledoing/262sbwv4fclcyh3zv56mb0zm/image_1cc58svl481re28bhsla3hvfat.png
+  [84]: http://static.zybuluo.com/whiledoing/ql0qf7kxvvacjo0mmv8csd77/image_1cc58t81i1ndr1mnc76m91frh1ba.png
+  [85]: http://karpathy.github.io/2015/05/21/rnn-effectiveness/
+  [86]: http://static.zybuluo.com/whiledoing/7pxzofkzzwj3ga9tq6m9erv4/image_1cc5a96f0qmb1hjouqvcrc1gipbn.png
+  [87]: https://github.com/jisungk/deepjazz
+  [88]: https://github.com/keras-team/keras/blob/master/examples/lstm_text_generation.py
