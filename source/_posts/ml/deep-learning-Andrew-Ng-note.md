@@ -932,7 +932,7 @@ Sequence to Sequence的RNN标准模型定义如下：
   [95]: http://static.zybuluo.com/whiledoing/v6mvmiktxtouklzwg4f8m387/image_1ccd1n6e11jga13494ccfq01cijfs.png
   [96]: http://static.zybuluo.com/whiledoing/qslsbb2bvidmv1lojtiraud0/image_1ccd1no1017lg1fpmnqaoj7133pgp.png
   [97]: http://static.zybuluo.com/whiledoing/pme45ole7355a7thu4v6ns27/image_1ccdhi1dv1ic2l8avdr11hc5vdh6.png
-  [98]: /#application-of-rnn
+  [98]: #application-of-rnn
   [99]: http://static.zybuluo.com/whiledoing/b7arszdg3vz499rnodkrovyy/image_1ccdhpj7s6fbrf51nc6e1s598hj.png
   [100]: http://static.zybuluo.com/whiledoing/r7hrpcoxhbj7601m3j53kc6c/image_1ccdi06041pvl1vclei41pnre2fig.png
   [101]: http://static.zybuluo.com/whiledoing/ekcw0uekb063eh2l6to66wq0/image_1ccdi10l2i71bib1g5km411i6vit.png
