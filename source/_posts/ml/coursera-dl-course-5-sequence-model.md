@@ -17,7 +17,7 @@ RNN是一种处理时序数据的网络模型。考虑之前学到的网络都�
 
 其特点：
 
-- 数据按照时间坐标$<t>$切片
+- 数据按照时间坐标$t$切片
 - 数据按照时间顺序多次输入
 - 上一层的输出结果会传递到下一层，用来拟合数据之间时序相关性。
 - 每一层都可以有输出预估（根据引用场景具体会不同）
@@ -26,9 +26,7 @@ RNN是一种处理时序数据的网络模型。考虑之前学到的网络都�
 
 ![image_1cc58ievt4u31og410cl1ahjvft9m.png-30.7kB][80]
 
-其本质就是将当前的输入和上一层的响应加权，然后计算得到本层相应和预估。（当然$\hat y^{<t>}$的输出不一定就是softmax，根据应用场景而定）
-
-![image_1cc58oaf51fvta8kkra1nmpbhga3.png-102.9kB][81]
+其本质就是将当前的输入和上一层的响应加权，然后计算得到本层响应和预估。（当然$\hat y^{<t>}$的输出不一定就是softmax，根据应用场景而定）
 
 级联的RNN Cell结构如图：
 
@@ -78,7 +76,7 @@ RNN是一种处理时序数据的网络模型。考虑之前学到的网络都�
 
 参考项目: [deepjazz][87]    [keras-example: lstm_text_generation][88]
 
-##  Word Embeddings
+## Word Embeddings
 
 在NLP领域，使用Word Embedding对单词语义进行建模：
 
@@ -175,4 +173,4 @@ Sequence to Sequence的RNN标准模型定义如下：
   [101]: http://static.zybuluo.com/whiledoing/ekcw0uekb063eh2l6to66wq0/image_1ccdi10l2i71bib1g5km411i6vit.png
   [102]: http://static.zybuluo.com/whiledoing/yta6hwizd6z707rxdfruf5wc/image_1ccdi3ur8n2ilps1v9dte2cbhja.png
   [103]: http://static.zybuluo.com/whiledoing/s2zyozu95khaee29fe3irtok/image_1ccdibnbg17jb18tn13hmklc1d87jn.png
- 
+
