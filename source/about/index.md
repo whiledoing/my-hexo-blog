@@ -9,7 +9,7 @@ date: 2016-01-16 16:14:41
 
 比梅西高（最喜欢的运动员），比周杰伦吐字清楚（最喜欢的歌手），比汤姆·汉克斯（最喜欢的演员）中文说得好……
 
-曾在网易游戏做过3年开发工程师，现找工作ing。
+曾在网易游戏做过4年开发工程师，现找工作ing。
 
 玩音乐，玩徒步，玩摄影。
 
@@ -18,6 +18,8 @@ date: 2016-01-16 16:14:41
 坚定的KISS主义信仰者，喜欢一切简单且美的事物包括人（妹纸）
 
 我的MBTI代码是ENTP，代表外向（扯淡）、直觉（冒险）、思维（逗逼）、感知（折腾）。
+
+更多点击
 
 ## 关于博客
 
@@ -31,4 +33,5 @@ date: 2016-01-16 16:14:41
 
 ## 联系
 
-mailto: [whiledoing@163.com](mailto:whiledoing@163.com)
+- <i class="fa fa-envelope"></i> [whiledoing@163.com](mailto:whiledoing@163.com)
+- <i class="fa fa-github-alt"></i> [whiledoing](https://github.com/whiledoing)
