@@ -33,5 +33,6 @@ date: 2016-01-16 16:14:41
 
 ## 联系
 
-- <i class="fa fa-envelope"></i> [whiledoing@163.com](mailto:whiledoing@163.com)
-- <i class="fa fa-github-alt"></i> [whiledoing](https://github.com/whiledoing)
+<i class="fa fa-envelope" style="color:DeepSkyBlue"></i> [whiledoing@163.com](mailto:whiledoing@163.com) |
+<i class="fa fa-github-alt" style="color:DeepSkyBlue"></i> [whiledoing](https://github.com/whiledoing) |
+<i class="fa fa-file-pdf-o" style="color:DeepSkyBlue"></i> [resume](/doc/cv-jinzheng-jiang-cn.pdf)
