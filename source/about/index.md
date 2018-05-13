@@ -19,8 +19,6 @@ date: 2016-01-16 16:14:41
 
 我的MBTI代码是ENTP，代表外向（扯淡）、直觉（冒险）、思维（逗逼）、感知（折腾）。
 
-更多点击
-
 ## 关于博客
 
 最早，我使用[wiz笔记](https://www.wiz.cn/)进行知识管理。因为其内置了makrdown编辑功能，编辑时用markdown，阅读时软件自动渲染，很方便。
@@ -35,4 +33,5 @@ date: 2016-01-16 16:14:41
 
 <i class="fa fa-envelope" style="color:DeepSkyBlue"></i> [whiledoing@163.com](mailto:whiledoing@163.com) |
 <i class="fa fa-github-alt" style="color:DeepSkyBlue"></i> [whiledoing](https://github.com/whiledoing) |
-<i class="fa fa-file-pdf-o" style="color:DeepSkyBlue"></i> [resume](/doc/cv-jinzheng-jiang-cn.pdf)
+<i class="fa fa-linkedin" style="color:DeepSkyBlue"></i> [linkedin](https://www.linkedin.com/in/jinzheng-jiang/)
+<!-- <i class="fa fa-file-pdf-o" style="color:DeepSkyBlue"></i> [résumé](/doc/cv-jinzheng-jiang-cn.pdf) -->
