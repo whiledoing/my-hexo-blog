@@ -13,8 +13,8 @@ title: Coursera - Andrew Ng - Machine Learning - 学习笔记
 
 <!--more-->
 
-- supervised learning(监督学习):  使用已经标注的数据计算出模型，regression/classification 
-- unsupervised learning(无监督学习): 使用没有具体标记信息的数据，计算机分类得到模型，cluster(聚类) 
+- supervised learning(监督学习):  使用已经标注的数据计算出模型，regression/classification
+- unsupervised learning(无监督学习): 使用没有具体标记信息的数据，计算机分类得到模型，cluster(聚类)
 
 # Regression
 
@@ -200,7 +200,7 @@ $$\theta = \theta - \alpha {1 \over m} X^T(X \theta - y)$$
 - rolling/unrolling parameters
 
     优化函数计算时，传入的$\theta$参数都是列数据，而我们这里的$\Theta$是多个矩阵构成的大数据，所以计算的时候，需要将矩阵压缩成向量。但是计算cost的时，再将矩阵还原回来，计算代价。
-    
+
     ![image_1cauphph8beg1gibka1aug1idq9o.png-84.5kB][30]
 
 - grandient checking。
@@ -216,9 +216,9 @@ $$\theta = \theta - \alpha {1 \over m} X^T(X \theta - y)$$
     ![image_1cauplcbcr2h1oft1b7fbabrhsa5.png-76kB][32]
 
     课后作业中提到的一种比较好计算随机数范围的经验公式：
-    
+
     ![image_1cauu23j2270lf1rovk7i4keav.png-36kB][33]
-    
+
 - network architecture
 
     隐藏层的节点个数要都一样，理论上隐藏层越多，效果越好，计算越多。
@@ -236,14 +236,14 @@ $$\theta = \theta - \alpha {1 \over m} X^T(X \theta - y)$$
 3. 一定要小心bias node。
 
     计算反向误差$\delta$时，反向的结果考虑了bias node（正向计算输入层多一个节点，所以反向计算回来时也多一个），但这个数据并不用到，要小心。
-    
+
     还有就是计算regularization时不考虑bias node，也需要去掉：
-    
+
     ![image_1cav9fg8j1cttfov1im54021qoic6.png-179.4kB][35]
 
 [代码实现][36]
 
-# Evaluating & Improve 
+# Evaluating & Improve
 
 已经实现了算法，那么如何评定一个算法是好是坏？如何确定特定的参数效果更好？如果确定了算法存在问题，应该如何改进？
 
@@ -337,7 +337,7 @@ $$\theta = \theta - \alpha {1 \over m} X^T(X \theta - y)$$
 一种自动计算阈值的方法是结合考虑precision/recall:
 
 $$
-F_1 \text{Score(F Score)} = 2  \frac {PR} {P+R}  
+F_1 \text{Score(F Score)} = 2  \frac {PR} {P+R}
 $$
 
 这样子，如果任一个数值如果是0，价值将非常低，两者都比较高的情况下，价值高。这是ml领域常用的一种计算方法。
@@ -497,7 +497,7 @@ Anomaly Dection是一种检测**异常**数据的算法，其核心思想是对�
 
 总的说来，异常检测算法更突出**异常**二字。大多数数据都是正常的，只有不多的情况是异常，或者是异常根本无法界定类别（无法打tag），甚至不知道异常长什么样子的情况下，用异常检测更直观有效。或者换个角度来讲，如果数据不能很好的展示**异常长什么样子**，监督学习算法没办法学到什么是异常，也无从判定异常。
 
-对结果的error analysis重点是分析False, Positive的情况（也就是预测不是异常，但其实是异常），这说明我们的模型觉得测试数据和正常数据挺相似，但其实存在一些我们没有考虑到的因素。
+对结果的error analysis重点是分析False Negative的情况（也就是预测不是异常，但其实是异常），这说明我们的模型觉得测试数据和正常数据挺相似，但其实存在一些我们没有考虑到的因素。
 
 ![image_1cb4oep5v107s1lei1dh61op6tmu5u.png-130.5kB][64]
 
