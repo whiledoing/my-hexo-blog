@@ -1,7 +1,7 @@
 ---
 date: 2018/10/1 15:50:22
-tags: [java,学习笔记]
-title: 《Java编程思想》学习笔记
+tags: [java,读书笔记]
+title: 《Java编程思想》读书笔记
 ---
 
 学习[Java编程思想](https://book.douban.com/subject/2061172/)的笔记。
