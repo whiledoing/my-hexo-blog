@@ -1,7 +1,7 @@
 ---
 date: 2018/9/5 14:45:59
 tags: [java,读书笔记,并发]
-title: java-concurrency-in-practice.pdf
+title: 《Java并发编程实战》读书笔记
 ---
 
 如果你在亚马逊搜索java相关的书，本书排名是非常靠前的，[豆瓣](https://book.douban.com/subject/10484692/)的评分也很高。刚好我最近忙找工作，也需要复习并发相关的技术，所以果断买之。
