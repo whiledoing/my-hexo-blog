@@ -59,6 +59,7 @@ public class Outer {
         }
     }
 }
+```
 
 上面用法将测试代码委托到单独的内部嵌套类中进行，这样子发布代码时可以将`Outer$Test.class`删除，而不会将测试代码发布出去。调用测试，执行`java Outer$Test`即可。
 
@@ -126,7 +127,7 @@ public @interface Test {
 }
 
 class TestClss {
-    // 集中调用都可以，因为使用了默认的定义规则。
+    // 几种调用都可以，因为使用了默认的定义规则。
     @Test(value = 100)
     @Test(100)
     @Test
@@ -161,7 +162,12 @@ java的容器的用下面这张图可以完美的展示：
 
 ![](https://www.linuxtopia.org/online_books/programming_books/thinking_in_java/TIJ325.png)
 
-其中没有说明的是`Queue`接口，`Queue`接口有两个实现类，一个是`LinkedList`，一个是`PriorityQueue`。注意`Queue`只是一个接口。
+javaSE5中额外添加了：
+
+- `Queue`接口，`Queue`接口有集中实现类：`LinkedList`，`PriorityQueue`和各种版本的`BlockingQueue`（ArrayBlockingQueue/LinkedBlockingQueue/PriorityBlockingQueue）
+- `ConcurrentMap`接口及其实现`ConcurrentHashMap`
+- 实现List接口的`CopyOnWriteArrayList`和实现Set接口的`CopyOnWriteArraySet`
+- 为了Enum特殊设计的`EnumSet`和`EnumMap`
 
 继承体系中，其实只有四种接口容器：Map、List、Set和Queue，它们各自有对应的实现版本。除了Map，其余的实现体都是Collection类型，Map和Collection的主要区别在于管理的元素是一维的还是一个tuple。也因此，Map类型单独构造了一个独立于Collection外的继承体系，虽然两者提供的操作语义非常相似。
 
@@ -170,6 +176,8 @@ java的容器结构中，除了定义基本的接口，还定义了以Abstract�
 使用`Arrays.asList`接口可以给数组提供一个list的视图，但是注意，不可以增加或者删除元素，如果修改了list的内容，也会导致底层的数组元素的修改。
 
 这篇文章对容器的api进行了更加详细的说明：[参考](http://jiangjun.name/thinking-in-java/chapter17)
+
+如果将按元素放入到Hash容器中，必须要同时实现`equals`和`hashcode`两个接口。`hashcode`接口用来生成**不唯一**的对象标识，以便确定对象槽位。而`equals`接口才是最终判断对象是否一样的接口。两者缺一不可，需要**同时提供实现体**。
 
 ## 异常
 
@@ -294,4 +302,262 @@ Interface proxy = (Interface) Proxy.newProxyInstance(
 
 // 直接调用obj.doSomething(1)
 proxy.doSomething(1);
+```
+
+## 泛型
+
+java的泛型机制基于类型擦除，和C++的完全不一样，这是为了兼容以前没有用泛型实现的类库代码。（个人理解）擦除机制是指在**运行时**将泛型类中的类型信息去除，所以泛型类中保存的类型实例其实都是**Object引用**。所以，java泛型的便利之处更多在于提供**编译期类型检查，以及对外提供数据时的自动类型转换**。
+
+```java
+public class Erased<T> {
+    public static void f(Object arg) {
+        // ERROR
+        if(arg instanceof T) {}
+
+        // Error
+        T var = new T();
+
+        // ERROR
+        T[] array = new T[10];
+
+        // Unchecked warning
+        T[] array = (T) new Object[10];
+    }
+}
+
+上面代码说明，在泛型中，不要期望知道实际的类型T，也不要根据类型T来构造对象（因为根本不知道T是什么类型，也就不知道是否存在默认构造函数。）同样，也不可以构造数组类型。实践上，在泛型中使用数组，就直接用`Object[]`，在对外暴露数据时再进行转换。
+
+另外，java的泛型提供自动转型（编译后代码自动生成）：
+
+```java
+interface Factory<T> { T create(); }
+
+class Base {}
+
+// 自己提供创建自己的工厂方法
+class Derived extends Base implements Factory<Derived> {
+    @Override public Derived create() { return new Derived(); }
+}
+
+public class GenericHolder<T> {
+    class GenericHolder<T> {
+    private T obj;
+    public void set(T obj) {
+        // 设定了泛型类型T，java就会执行编译期类型检查，但实际运行时，obj的类型就是Object，而不是T
+        this.obj = obj;
+    }
+
+    public T get() {
+        // 设定了泛型类型T，java构造代码时，会自动将对外的输出数据转型为T类型，等价于 return (T)this.obj;
+        return this.obj;
+    }
+
+    public void setByClass(Class<? extends T> kind) {
+        try {
+            // 基于反射的class构造，有局限性，只可以调用默认构造
+            this.obj = kind.newInstance();
+        } catch (InstantiationException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        }
+    }
+
+    // 基于工厂调用，更加可定制。
+    public void setByFactory(Factory<? extends T> factory) {
+        this.obj = factory.create();
+    }
+
+    public static void main(String[] args) {
+        GenericHolder<Base> holder = new GenericHolder<>();
+        holder.set(new Derived());
+        holder.setByClass(Derived.class);
+        holder.setByFactory(new Derivce())
+    }
+}
+
+上面的代码，通过三种方式将数据传递到泛型类中。
+
+- 通过外部构造T的对象传递。
+- 提供class对象，基于class的反射机制来构造默认对象。
+- （推荐）提供工厂方法，可以更加定制化构造过程。`Factor<? extends T>`表示该工厂的类型是任意的T延伸类型，但`create`返回的类型被编译器自动擦除为T类型。
+
+---
+
+PECS原则（Product Extends, Consumer Super），该原则表示在泛型编程中，如果容器类用来生产对象，使用extends，如果用来消费对象，使用super。
+
+比如`Collectios.copy`的实现：
+
+```java
+// src的get接口生产数据，所以使用extends；而dest用来放置数据，使用super
+public static <T> void copy(List<? super T> dest, List<? extends T> src) {
+    int srcSize = src.size();
+    if (srcSize > dest.size())
+        throw new IndexOutOfBoundsException("Source does not fit in dest");
+
+    if (srcSize < COPY_THRESHOLD ||
+        (src instanceof RandomAccess && dest instanceof RandomAccess)) {
+        for (int i=0; i<srcSize; i++)
+            dest.set(i, src.get(i));
+    } else {
+        ListIterator<? super T> di=dest.listIterator();
+        ListIterator<? extends T> si=src.listIterator();
+        for (int i=0; i<srcSize; i++) {
+            di.next();
+            di.set(si.next());
+        }
+    }
+}
+```
+
+可以这么理解：如果用来get数据，容器中不管放置的是什么类型，都需要规约到一个数据类型T，这个T就是所有类型的基类，所以用extends关键字来将类型向上擦除到基类T；如果用来put数据，容器中的类型就应该是基类的类型，至于具体是哪一种基类类型不重要，但一定是T的基类类型，才可以将T的数据放入。
+
+参考：[Java泛型中的PECS原则](https://juejin.im/entry/5ae9d19c6fb9a07aa047d1fb)
+
+---
+
+关于mixin：在C++中，可以通过多重继承，或者是模板继承链的方式来实现mixin（比如`template<class T> class SomeMixin : public T`）。而java中既不支持多继承，也不支持将泛型类型T做为父类型（因为类型擦除，运行时没有办法知道当前父类是啥了）。
+
+java的mixin的一种实现方式是利用代理的方式来构造对象的组合：
+
+```java
+class MixinProxy implements InvocationHandler {
+    private Map<String, Object> methodObjMap = new HashMap<>();
+
+    // 将接口中的所有方法和对应的对象进行绑定，遵循第一次出现优先匹配原则
+    MixinProxy(Map<Class<?>, Object> args) throws IllegalAccessException, InstantiationException {
+        for(Class<?> c : args.keySet()) {
+            for(Method m : c.getMethods()) {
+                if(!methodObjMap.containsKey(m.getName()))
+                    methodObjMap.put(m.getName(), args.get(c));
+            }
+        }
+    }
+
+    @Override
+    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+        // 调用代码时，找到method对应的obj来进行调用
+        Object realObject = methodObjMap.getOrDefault(method.getName(), null);
+        return realObject == null ? null : method.invoke(realObject, args);
+    }
+
+    public static Object newProxy(Map<Class<?>, Object> args) {
+        try {
+            return Proxy.newProxyInstance(
+                MixinProxy.class.getClassLoader(),
+                // 将Object[] 变为 Class<?>[] 的方法，参数中构造一个0元素的数组只是通知toArray方法对应转化数据的类型
+                args.keySet().toArray(new Class<?>[0]),
+                new MixinProxy(args)
+            );
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+}
+
+interface TimeStampInterface { long getTimeStamp(); }
+class TimeStamp implements TimeStampInterface {
+    private final long timeStamp = new Date().getTime();
+    @Override
+    public long getTimeStamp() {
+        return timeStamp;
+    }
+}
+
+interface RealInterface { void hello(); }
+class RealObject implements RealInterface {
+    @Override
+    public void hello() {
+        System.out.println("hello world!");
+    }
+}
+
+public class TestMixin {
+    public static void main(String[] args) {
+        Object real = MixinProxy.newProxy(new HashMap<Class<?>, Object>() {{
+            put(TimeStampInterface.class, new TimeStamp());
+            put(RealInterface.class, new RealObject());
+        }});
+
+        // 使用起来非常不方便，需要各种转型
+        System.out.println("(TimeStamp)(real).getTimeStamp() = " + ((TimeStampInterface)real).getTimeStamp());
+        ((RealInterface) real).hello();
+    }
+}
+```
+
+上面代码主要逻辑就是构造一个代理，这个代理中记录了各个接口类对应实现体的对象。在调用具体方法时，根据方法名找到具体实现体调用，实现了组合模式的mixin。但使用起来非常蛋疼：
+
+- 需要定义各种interface还对应的实现体
+- 调用时还需要各种转型，否则编译都无法通过。
+
+在java8中可以在interface中定义默认方法，这给mixin机制提供了更好的实现（虽然也还是不如python,C++,ruby中的实现来的直接）：
+
+```java
+interface ContainerMixin {
+    // 将保存状态的内容交给子类提供，接口中提供模板方法
+    List<Object> getContainer();
+    default void addObject(Object e) { getContainer().add(e); }
+}
+
+class Airport implements ContainerMixin {
+    private List<Object> container = new LinkedList<>();
+    @Override
+    public List<Object> getContainer() { return container; }
+}
+```
+
+这样子只需要将状态相关的内容通过接口的方法委派给实现体即可，使用上比基于代理的方法要方便的多（至少实现了多个接口，调用方法时不需要进行转换）
+
+参考文档:
+
+- [java-mixins](http://hannesdorfmann.com/android/java-mixins)
+- [java8-now-you-have-mixins](https://kerflyn.wordpress.com/2012/07/09/java-8-now-you-have-mixins/)
+
+## 数组
+
+除非性能出现问题，否则优先使用容器而不是数组。数组是java最开始设计时候的产物，比包装类性能更好，但和java的OO体系有些地方不一致，所以使用上存在一些不便利。比如数组不可以在根据泛型参数进行构造，而容器是可以的。
+
+`Arrays`类中提供了操作数组的方法。如果需要输出数组，需要使用`Arrays.toString`进行转换，否则输出的是数组对象本身。（个人理解应该是数组是原始类型，并没有`toString`相关方法）
+
+如果需要在泛型中使用数组，有两种方法：1）基于`Collection.toArray`接口 2）传递数组类型的type进行构造。
+
+```java
+// 手动传入一个T[]类型的数组，基于toArray进行转换
+public static <T> T[] genArray(T[] src, Generator<? extends T> gen, int size) {
+    List<T> dst = new ArrayList<>(size);
+    IntStream.range(0, size).forEach(value -> dst.add(value, gen.next()));
+    return dst.toArray(src);
+}
+
+// 传递type进行构造，没有别的部分可以在泛型中构造基于T的数组
+public static <T> T[] genArray(Class<T> type, Generator<T> gen, int size) {
+    T[] dst = ((T[]) Array.newInstance(type, size));
+    IntStream.range(0, size).forEach(value -> dst[value] = gen.next());
+    return dst;
+}
+
+public static void main(String[] args) {
+    Random rnd = new Random();
+    System.out.println(Arrays.toString(genArray(new Integer[0], ()-> rnd.nextInt(100), 10)));
+    System.out.println(Arrays.toString(genArray(Integer.class, () -> rnd.nextInt(100), 10)));
+}
+```
+
+java6之后，推荐使用`new MyClass[0]`的方式传递到`toArray`方法中。[参考: make-arraylist-toarray-return-more-specific-types](https://stackoverflow.com/questions/5061640/make-arraylist-toarray-return-more-specific-types)
+
+数组还有一个特性，构造的时候会自动初始化，这个对于刷算法题还是挺方便的。如果是int数组，自动初始化为0；如果是对象数组，自动初始化为null。
+
+java的数组并不一定要指明所有维度（因为有length标识，内存结构上并不完全类似于C++那种一次性大内存块的模式的数组，还是有对象概念的），可以动态创建，且同一层次上维度并不需要相同：
+
+```java
+int[][] array = new int[3][];
+array[0] = new int[10];
+array[1] = new int[] {1, 2, 3};
+
+// 多维数组使用deep前缀接口递归操作
+System.out.println("array = " + Arrays.deepToString(array));
+
+// 输出
+// array = [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [1, 2, 3], null]
 ```

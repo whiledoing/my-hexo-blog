@@ -2,6 +2,7 @@
 date: 2018/9/5 14:45:59
 tags: [java,读书笔记,并发]
 title: 《Java并发编程实战》读书笔记
+mathjax: true
 ---
 
 如果你在亚马逊搜索java相关的书，本书排名是非常靠前的，[豆瓣](https://book.douban.com/subject/10484692/)的评分也很高。刚好我最近忙找工作，也需要复习并发相关的技术，所以果断买之。
@@ -52,7 +53,7 @@ public class UnsafeCachingFactorizer implements Servlet {
     private final AtomicReference<BigInteger[]> lastFactors = new AtomicReference<BigInteger[]>();
 
     public void service(ServletRequest req, ServletResponse resp) {
-        BigInteger i = extraceFromRequest(req);
+        BigInteger i = extractFromRequest(req);
         if (i.equals(lastNumber.get())
             encodeIntoResponse(resp, lastFactors.get());
         else {
@@ -91,7 +92,7 @@ public class UnsafeCachingFactorizer implements Servlet {
     @GuardedBy("this") private BigInteger[] lastFactors;
 
     public void service(ServletRequest req, ServletResponse resp) {
-        BigInteger i = extraceFromRequest(req);
+        BigInteger i = extractFromRequest(req);
         BigInteger[] factors = null;
 
         // 将读和写分离，先用一个同步块进行读
@@ -1180,7 +1181,10 @@ public class Semaphore implements java.io.Serializable {
 
 java中CAS操作被封装在原子变量类中，可分为4组：标量类、更新器类、数组类、复合变量类。常用的就是标量类：AtomicInteger、AtomicLong、AtomicBoolean、AtomicReference。
 
-构建非阻塞算法的技巧在于：**将执行原子修改的范围缩小到单个变量上。**如果修改不成功，就不停尝试。但如果要同时原子地修改多个变量，算法将变得比较复杂。以非阻塞链表的push为例，在链表中插入一个元素，需要原子的修改两个引用：1）当前尾结点的next设置为新节点 2）将新节点设置成尾结点。这种对多个变量进行修改的CAS算法，设计时有如下两个要点：
+构建非阻塞算法的技巧在于：**将执行原子修改的范围缩小到单个变量上**。如果修改不成功，就不停尝试。但如果要同时原子地修改多个变量，算法将变得比较复杂。以非阻塞链表的push为例，在链表中插入一个元素，需要原子的修改两个引用：
+
+- P1: 当前尾结点的next设置为新节点 
+- P2: 将新节点设置成尾结点。这种对多个变量进行修改的CAS算法，设计时有如下两个要点：
 
 - 要保证数据结构总是处于一致的状态。考虑当线程B到达时，发现线程A正在执行更新，那么线程B就不能立即开始执行自己的更新操作，而是等待A执行完成（通过CAS的状态比较），然后再执行B的逻辑。
 - 要确保一个线程失败时不会阻碍其他线程继续执行下去。考虑当B线程到达时，发现A已经完成了任务一，B可以帮助A完成后续的任务二，而不需要等待A唤醒之后完成，这样即使A出现问题，也可以保证其他任务可以继续执行下去。
