@@ -591,6 +591,148 @@ module github.com/whiledong/test
 
     > if the same name appears at the same nesting level, it is usually an error; it would be erroneous to embed log.Logger if the Job struct contained another field or method called Logger. However, if the duplicate name is never mentioned in the program outside the type definition, it is OK. This qualification provides some protection against changes made to types embedded from outside; there is no problem if a field is added that conflicts with another field in another subtype if neither field is ever used.
 
+- go的并发设计哲学：
+
+    > Do not communicate by sharing memory; instead, share memory by communicating.
+
+    go强大的concurrent的工具，天然可以用作*生产者-消费者模式*的处理队列，比如文档中提到的 `A Leaky Buffer` 示例。
+
+    该例是RPC框架的一个抽象，客户端（这里类producer）不停读取网络数据，获取到数据后，放入有界空闲队列中，起到了缓存池的作用。处理完数据后，放入空闲池中，等待一个服务端（这里类consumer）来消费，使用一个无缓存的channel进行空闲Buffer的传递（个人理解：如果处理方比较繁忙，生产方可以直接休息，而不用接受更多的生产需求，所以使用无缓存的channel在这里有这样一层控制语义）
+
+    ```go
+    var freeList = make(chan *Buffer, 100)
+    var serverChan = make(chan *Buffer)
+
+    func client() {
+        for {
+            var b *Buffer
+            // Grab a buffer if available; allocate if not.
+            select {
+            case b = <-freeList:
+                // Got one; nothing more to do.
+            default:
+                // None free, so allocate a new one.
+                b = new(Buffer)
+            }
+            load(b)              // Read next message from the net.
+
+            // 无缓存channel，也可能能有多个协程等待，只是只能一个被唤醒
+            serverChan <- b      // Send to server.
+        }
+    }
+    ```
+
+    ```go
+    func server() {
+        for {
+            b := <-serverChan    // Wait for work.
+            process(b)
+            // Reuse buffer if there's room.
+            select {
+            case freeList <- b:
+                // Buffer on free list; nothing more to do.
+            default:
+                // Free list full, just carry on.
+                // 这里可能存在，存在满池的情况：server处理非常满，client处理很快，
+                // 又将数据填满freeList的buffer，上一轮处理的数据就放不回去了
+            }
+        }
+    }
+    ```
+
+- `panic`不要轻易使用，更多的使用 `error` 进行错误的处理。一种使用 `panic` 的场景是用在 `init` 函数中，如果初始化时候数据状态不对，直接退出程序是一个不错的选择：
+
+    ```go
+    var user = os.Getenv("USER")
+
+    func init() {
+        if user == "" {
+            panic("no value for $USER")
+        }
+    }
+    ```
+
+- 关于*interface-and-methods*，文档中的例子非常生动：
+
+    在go中，任何类型都可以绑定方法，所以任何的东西在go中都可以满足接口的要求，比如 `http.Handler` 接口：
+
+    ```go
+    type Handler interface {
+        ServeHTTP(ResponseWriter, *Request)
+    }
+    ```
+
+    这里，`ResponseWriter` 是一个接口，实现了 `Write` 方法，一般接口在go中都直接**使用值类型**；而 `Request` 是一个结构体，所以这里使用指针类型。
+
+    如果需要保存状态，比如容易想到，使用结构体，定义状态数据，并实现接口方法：
+
+    ```go
+    // Simple counter server.
+    type Counter struct {
+        n int
+    }
+
+    func (ctr *Counter) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+        ctr.n++
+        fmt.Fprintf(w, "counter = %d\n", ctr.n)
+    }
+    ```
+
+    但实际上，这里其实直接用int就可以表示 `Counter` 类型：
+
+    ```go
+    // 直接int表示类型，实现对应方法，很有意思
+    // int本身就记录了自身的状态
+    type Counter int
+
+    func (ctr *Counter) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+        *ctr++
+        fmt.Fprintf(w, "counter = %d\n", *ctr)
+    }
+    ```
+
+    如果需要访问网页的时候，存在一些通知事件，可以将channel直接作为类型定义：
+
+    ```go
+    // A channel that sends a notification on each visit.
+    // (Probably want the channel to be buffered.)
+    type Chan chan *http.Request
+
+    func (ch Chan) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+        ch <- req
+        fmt.Fprint(w, "notification sent")
+    }
+    ```
+
+    最后，如果我们打算将符合签名的原始方法，转化为无状态的实现 `ServeHTTP` 的类型，可以直接将 **函数** 定义为一个类型，调用该类型就等于进行函数的强制转换：
+
+    ```go
+    // The HandlerFunc type is an adapter to allow the use of
+    // ordinary functions as HTTP handlers.  If f is a function
+    // with the appropriate signature, HandlerFunc(f) is a
+    // Handler object that calls f.
+    type HandlerFunc func(ResponseWriter, *Request)
+
+    // ServeHTTP calls f(w, req).
+    func (f HandlerFunc) ServeHTTP(w ResponseWriter, req *Request) {
+        f(w, req)
+    }
+
+    // Argument server.
+    func ArgServer(w http.ResponseWriter, req *http.Request) {
+        fmt.Fprintln(w, os.Args)
+    }
+
+    http.Handle("/args", http.HandlerFunc(ArgServer))
+    ```
+
+    总结起来：
+
+    1. go中接口就是方法的集合
+    2. 几乎go中任何元素都可以定义为一个type
+    3. type不一定只能用struct来包含状态，元素本身就可以作为type的状态
+    4. type本质上是**嫁接数据和接口的桥梁**
+
 ## misc
 
 ### slices-of-interfaces
@@ -628,3 +770,14 @@ go 中几个有用的，和别的编程语言不太一样的格式控制符：
 - `%+v`：打印 struct 时，加入 filed 名称。
 - `%#v`：打印 struct 时，同时加入 struct 的名称和 filed 名称。
 - `%T`：打印类型
+
+### goproxy
+
+大陆的官方本地代理服务，go的package挂载CDN，具体参考项目主页[goproxy.cn](https://github.com/goproxy/goproxy.cn)
+
+在mac中需要配置环境变量：
+
+```bash
+export GO111MODULE=on
+export GOPROXY=https://goproxy.cn
+```
