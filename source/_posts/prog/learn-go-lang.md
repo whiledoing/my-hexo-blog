@@ -398,6 +398,199 @@ module github.com/whiledong/test
 
 所以如果不一致，就会发现导入的路径名称和使用的包名称不一致，比较奇怪。[everything-you-need-to-know-about-packages-in-go](https://medium.com/rungo/everything-you-need-to-know-about-packages-in-go-b8bac62b74cc)
 
+## effective-go
+
+记录[effective-go](https://golang.org/doc/effective_go.html)的学习内容。
+
+- 在package定义之前的是包级别的注释，一般定义为 `Package xxxx implements xxxx`
+
+- 对外暴露的接口，一般注释第一个单词就是方法名称，比如：
+
+    ```go
+    // Compile parses a regular expression and returns, if successful,
+    // a Regexp that can be used to match against text.
+    func Compile(str string) (*Regexp, error) {
+    ```
+
+    这样子对grep比较友好，搜索关键字，就知道第一个单词对应方法名。
+
+- package的名称，在go中提倡更加简单，简洁的方式。`Long names don't automatically make things more readable. A helpful doc comment can often be more valuable than an extra long name.`。
+
+- >Go has no comma operator and ++ and -- are statements not expressions. Thus if you want to run multiple variables in a for you should use parallel assignment (although that precludes ++ and --).
+
+    在for语句中，如果需要同时操作多个数据的变更，使用tuple的变更方式：
+
+    ```go
+    // Reverse a
+    for i, j := 0, len(a)-1; i < j; i, j = i+1, j-1 {
+        a[i], a[j] = a[j], a[i]
+    }
+    ```
+
+- go中支持，返回的参数带名称，和入参一样，带名称的参数会初始化为zero values of type. 如果return没有加入参数，会返回命名返回参数的当前数值。
+
+    ```go
+    func ReadFull(r Reader, buf []byte) (n int, err error) {
+        for len(buf) > 0 && err == nil {
+            var nr int
+            nr, err = r.Read(buf)
+            n += nr
+            buf = buf[nr:]
+        }
+        return
+    }
+    ```
+
+- go的defer语句，会在调用defer之时，就会计算defer函数绑定的参数内容。和一般语言的闭包延迟解析机制不太一样，应该算是避免了一种可能的语言坑。
+
+    ```go
+    // LIFO: last in first out, output: 4 3 2 1
+    for i := 0; i < 5; i++ {
+        defer fmt.Printf("%d ", i)
+    }
+    ```
+
+    defer的参数，在defer调用时解析，利用好可以简化代码逻辑，比如文档中给出的：
+
+    ```go
+    /*
+    entering: b
+    in b
+    entering: a
+    in a
+    leaving: a
+    leaving: b
+    */
+    func trace(s string) string {
+        fmt.Println("entering:", s)
+        return s
+    }
+
+    func un(s string) {
+        fmt.Println("leaving:", s)
+    }
+
+    func a() {
+        defer un(trace("a"))
+        fmt.Println("in a")
+    }
+
+    func b() {
+        defer un(trace("b"))
+        fmt.Println("in b")
+        a()
+    }
+
+    func main() {
+        b()
+    }
+    ```
+
+    `trace`在调用defer的过程中，起到了初始化的作用，一行代码做到了context的开始和运行log的监控。
+
+- `slice`的本质其实是包含了数据指针的结构体，使用**值传递**，但是在修改slice内容的时候，会修改到内部的数据。所以，我们可以用`slice`做为入参时，可以修改实际的数据，比如`File.Read`的定义`func (f *File) Read(buf []byte) (n int, err error)`。
+
+- `2D-slice`的分配有两种方式（体现了go的灵活），一种是数据可变长的，每次分配一个新的行数据；另外是类似C的方式，二维的数组数据本身就是一个一维数组，这样子内存效率更高：
+
+    ```go
+    // Allocate the top-level slice.
+    picture := make([][]uint8, YSize) // One row per unit of y.
+    // Loop over the rows, allocating the slice for each row.
+    for i := range picture {
+        picture[i] = make([]uint8, XSize)
+    }
+
+    // 将行数据指向一个数据段分片
+    // Allocate the top-level slice, the same as before.
+    picture := make([][]uint8, YSize) // One row per unit of y.
+    // Allocate one large slice to hold all the pixels.
+    pixels := make([]uint8, XSize*YSize) // Has type []uint8 even though picture is [][]uint8.
+    // Loop over the rows, slicing each row from the front of the remaining pixels slice.
+    for i := range picture {
+        picture[i], pixels = pixels[:XSize], pixels[XSize:]
+    }
+    ```
+
+- 使用`String() string`接口时，需要留意不要产生类型数据的循环解析：
+
+    ```go
+    type MyString string
+
+    func (m MyString) String() string {
+        return fmt.Sprintf("MyString=%s", m) // Error: will recur forever.
+    }
+    ```
+
+    解决的方法很简单，将数据强制转换为基本类型：
+
+    ```go
+    type MyString string
+    func (m MyString) String() string {
+        return fmt.Sprintf("MyString=%s", string(m)) // OK: note conversion.
+    }
+    ```
+
+- > The rule about pointers vs. values for receivers is that value methods can be invoked on pointers and values, but pointer methods can only be invoked on pointers.
+  > This rule arises because pointer methods can modify the receiver; invoking them on a value would cause the method to receive a copy of the value, so any modifications would be discarded. The language therefore disallows this mistake.
+
+    指针定义的方法，就表示数据是可变的，只能接受指针数据。
+
+- go中没有继承的概念，继承通过`embedding`来实现。所谓`embedding`就是直接将**父类的方法和字段变成自己的方法和字段**，提供了一种更加类型（接口）组合方式：
+
+    ```go
+    // io.ReadWrite就是一个接口的组合，直接包含了Reader/Write的接口方法
+    // ReadWriter stores pointers to a Reader and a Writer.
+    // It implements io.ReadWriter.
+    type ReadWriter struct {
+        *Reader  // *bufio.Reader
+        *Writer  // *bufio.Writer
+    }
+    ```
+
+    注意，`embedding`不需要制定**变量名称**，如果制定了，就不是嵌入，而是定义成员变量，这样子还需要自己定义相关的方法实现，才算是有对应的接口：
+
+    ```go
+    type ReadWriter struct {
+        reader *Reader
+        writer *Writer
+    }
+
+    // 还需要自己重新实现对应的接口方法
+    func (rw *ReadWriter) Read(p []byte) (n int, err error) {
+        return rw.reader.Read(p)
+    }
+    ```
+
+    对于`embedding`而言，其和继承不同的地方就在于，调用`embedding`类型的方法时，实际是一种**组合的关系**，会将方法委托到对应的实例方法上，就类似上面的代码实现。
+
+    同时我们可以再构造的时候，制定组合的对象：
+
+    ```go
+    type Job struct {
+        Command string
+        *log.Logger
+    }
+
+    func NewJob(command string, logger *log.Logger) *Job {
+        return &Job{command, logger}
+    }
+
+    // or with a composite literal
+    // job := &Job{command, log.New(os.Stderr, "Job: ", log.Ldate)}
+    ```
+
+    可以使用**最里面的类名称**做为实际的组合对象进行返回，比如：
+
+    ```go
+    func (job *Job) Printf(format string, args ...interface{}) {
+        job.Logger.Printf("%q: %s", job.Command, fmt.Sprintf(format, args...))
+    }
+    ```
+
+    如果嵌入的类名称或者相同层级的字段相同的话，**只要外围不直接使用冲突的名称**，系统不会报错，因为只需要扩展方法和属性而已，否则会报错。
+
+    > if the same name appears at the same nesting level, it is usually an error; it would be erroneous to embed log.Logger if the Job struct contained another field or method called Logger. However, if the duplicate name is never mentioned in the program outside the type definition, it is OK. This qualification provides some protection against changes made to types embedded from outside; there is no problem if a field is added that conflicts with another field in another subtype if neither field is ever used.
+
 ## misc
 
 ### slices-of-interfaces
