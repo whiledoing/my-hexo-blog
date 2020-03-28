@@ -402,336 +402,486 @@ module github.com/whiledong/test
 
 记录[effective-go](https://golang.org/doc/effective_go.html)的学习内容。
 
-- 在package定义之前的是包级别的注释，一般定义为 `Package xxxx implements xxxx`
+- 在 package 定义之前的是包级别的注释，一般定义为 `Package xxxx implements xxxx`
 
 - 对外暴露的接口，一般注释第一个单词就是方法名称，比如：
 
-    ```go
-    // Compile parses a regular expression and returns, if successful,
-    // a Regexp that can be used to match against text.
-    func Compile(str string) (*Regexp, error) {
-    ```
+  ```go
+  // Compile parses a regular expression and returns, if successful,
+  // a Regexp that can be used to match against text.
+  func Compile(str string) (*Regexp, error) {
+  ```
 
-    这样子对grep比较友好，搜索关键字，就知道第一个单词对应方法名。
+  这样子对 grep 比较友好，搜索关键字，就知道第一个单词对应方法名。
 
-- package的名称，在go中提倡更加简单，简洁的方式。`Long names don't automatically make things more readable. A helpful doc comment can often be more valuable than an extra long name.`。
+- package 的名称，在 go 中提倡更加简单，简洁的方式。`Long names don't automatically make things more readable. A helpful doc comment can often be more valuable than an extra long name.`。
 
-- >Go has no comma operator and ++ and -- are statements not expressions. Thus if you want to run multiple variables in a for you should use parallel assignment (although that precludes ++ and --).
+- > Go has no comma operator and ++ and -- are statements not expressions. Thus if you want to run multiple variables in a for you should use parallel assignment (although that precludes ++ and --).
 
-    在for语句中，如果需要同时操作多个数据的变更，使用tuple的变更方式：
+  在 for 语句中，如果需要同时操作多个数据的变更，使用 tuple 的变更方式：
 
-    ```go
-    // Reverse a
-    for i, j := 0, len(a)-1; i < j; i, j = i+1, j-1 {
-        a[i], a[j] = a[j], a[i]
-    }
-    ```
+  ```go
+  // Reverse a
+  for i, j := 0, len(a)-1; i < j; i, j = i+1, j-1 {
+      a[i], a[j] = a[j], a[i]
+  }
+  ```
 
-- go中支持，返回的参数带名称，和入参一样，带名称的参数会初始化为zero values of type. 如果return没有加入参数，会返回命名返回参数的当前数值。
+- go 中支持，返回的参数带名称，和入参一样，带名称的参数会初始化为 zero values of type. 如果 return 没有加入参数，会返回命名返回参数的当前数值。
 
-    ```go
-    func ReadFull(r Reader, buf []byte) (n int, err error) {
-        for len(buf) > 0 && err == nil {
-            var nr int
-            nr, err = r.Read(buf)
-            n += nr
-            buf = buf[nr:]
-        }
-        return
-    }
-    ```
+  ```go
+  func ReadFull(r Reader, buf []byte) (n int, err error) {
+      for len(buf) > 0 && err == nil {
+          var nr int
+          nr, err = r.Read(buf)
+          n += nr
+          buf = buf[nr:]
+      }
+      return
+  }
+  ```
 
-- go的defer语句，会在调用defer之时，就会计算defer函数绑定的参数内容。和一般语言的闭包延迟解析机制不太一样，应该算是避免了一种可能的语言坑。
+- go 的 defer 语句，会在调用 defer 之时，就会计算 defer 函数绑定的参数内容。和一般语言的闭包延迟解析机制不太一样，应该算是避免了一种可能的语言坑。
 
-    ```go
-    // LIFO: last in first out, output: 4 3 2 1
-    for i := 0; i < 5; i++ {
-        defer fmt.Printf("%d ", i)
-    }
-    ```
+  ```go
+  // LIFO: last in first out, output: 4 3 2 1
+  for i := 0; i < 5; i++ {
+      defer fmt.Printf("%d ", i)
+  }
+  ```
 
-    defer的参数，在defer调用时解析，利用好可以简化代码逻辑，比如文档中给出的：
+  defer 的参数，在 defer 调用时解析，利用好可以简化代码逻辑，比如文档中给出的：
 
-    ```go
-    /*
-    entering: b
-    in b
-    entering: a
-    in a
-    leaving: a
-    leaving: b
-    */
-    func trace(s string) string {
-        fmt.Println("entering:", s)
-        return s
-    }
+  ```go
+  /*
+  entering: b
+  in b
+  entering: a
+  in a
+  leaving: a
+  leaving: b
+  */
+  func trace(s string) string {
+      fmt.Println("entering:", s)
+      return s
+  }
 
-    func un(s string) {
-        fmt.Println("leaving:", s)
-    }
+  func un(s string) {
+      fmt.Println("leaving:", s)
+  }
 
-    func a() {
-        defer un(trace("a"))
-        fmt.Println("in a")
-    }
+  func a() {
+      defer un(trace("a"))
+      fmt.Println("in a")
+  }
 
-    func b() {
-        defer un(trace("b"))
-        fmt.Println("in b")
-        a()
-    }
+  func b() {
+      defer un(trace("b"))
+      fmt.Println("in b")
+      a()
+  }
 
-    func main() {
-        b()
-    }
-    ```
+  func main() {
+      b()
+  }
+  ```
 
-    `trace`在调用defer的过程中，起到了初始化的作用，一行代码做到了context的开始和运行log的监控。
+  `trace`在调用 defer 的过程中，起到了初始化的作用，一行代码做到了 context 的开始和运行 log 的监控。
 
-- `slice`的本质其实是包含了数据指针的结构体，使用**值传递**，但是在修改slice内容的时候，会修改到内部的数据。所以，我们可以用`slice`做为入参时，可以修改实际的数据，比如`File.Read`的定义`func (f *File) Read(buf []byte) (n int, err error)`。
+- `slice`的本质其实是包含了数据指针的结构体，使用**值传递**，但是在修改 slice 内容的时候，会修改到内部的数据。所以，我们可以用`slice`做为入参时，可以修改实际的数据，比如`File.Read`的定义`func (f *File) Read(buf []byte) (n int, err error)`。
 
-- `2D-slice`的分配有两种方式（体现了go的灵活），一种是数据可变长的，每次分配一个新的行数据；另外是类似C的方式，二维的数组数据本身就是一个一维数组，这样子内存效率更高：
+- `2D-slice`的分配有两种方式（体现了 go 的灵活），一种是数据可变长的，每次分配一个新的行数据；另外是类似 C 的方式，二维的数组数据本身就是一个一维数组，这样子内存效率更高：
 
-    ```go
-    // Allocate the top-level slice.
-    picture := make([][]uint8, YSize) // One row per unit of y.
-    // Loop over the rows, allocating the slice for each row.
-    for i := range picture {
-        picture[i] = make([]uint8, XSize)
-    }
+  ```go
+  // Allocate the top-level slice.
+  picture := make([][]uint8, YSize) // One row per unit of y.
+  // Loop over the rows, allocating the slice for each row.
+  for i := range picture {
+      picture[i] = make([]uint8, XSize)
+  }
 
-    // 将行数据指向一个数据段分片
-    // Allocate the top-level slice, the same as before.
-    picture := make([][]uint8, YSize) // One row per unit of y.
-    // Allocate one large slice to hold all the pixels.
-    pixels := make([]uint8, XSize*YSize) // Has type []uint8 even though picture is [][]uint8.
-    // Loop over the rows, slicing each row from the front of the remaining pixels slice.
-    for i := range picture {
-        picture[i], pixels = pixels[:XSize], pixels[XSize:]
-    }
-    ```
+  // 将行数据指向一个数据段分片
+  // Allocate the top-level slice, the same as before.
+  picture := make([][]uint8, YSize) // One row per unit of y.
+  // Allocate one large slice to hold all the pixels.
+  pixels := make([]uint8, XSize*YSize) // Has type []uint8 even though picture is [][]uint8.
+  // Loop over the rows, slicing each row from the front of the remaining pixels slice.
+  for i := range picture {
+      picture[i], pixels = pixels[:XSize], pixels[XSize:]
+  }
+  ```
 
 - 使用`String() string`接口时，需要留意不要产生类型数据的循环解析：
 
-    ```go
-    type MyString string
+  ```go
+  type MyString string
 
-    func (m MyString) String() string {
-        return fmt.Sprintf("MyString=%s", m) // Error: will recur forever.
-    }
-    ```
+  func (m MyString) String() string {
+      return fmt.Sprintf("MyString=%s", m) // Error: will recur forever.
+  }
+  ```
 
-    解决的方法很简单，将数据强制转换为基本类型：
+  解决的方法很简单，将数据强制转换为基本类型：
 
-    ```go
-    type MyString string
-    func (m MyString) String() string {
-        return fmt.Sprintf("MyString=%s", string(m)) // OK: note conversion.
-    }
-    ```
+  ```go
+  type MyString string
+  func (m MyString) String() string {
+      return fmt.Sprintf("MyString=%s", string(m)) // OK: note conversion.
+  }
+  ```
 
 - > The rule about pointers vs. values for receivers is that value methods can be invoked on pointers and values, but pointer methods can only be invoked on pointers.
   > This rule arises because pointer methods can modify the receiver; invoking them on a value would cause the method to receive a copy of the value, so any modifications would be discarded. The language therefore disallows this mistake.
 
-    指针定义的方法，就表示数据是可变的，只能接受指针数据。
+  指针定义的方法，就表示数据是可变的，只能接受指针数据。
 
-- go中没有继承的概念，继承通过`embedding`来实现。所谓`embedding`就是直接将**父类的方法和字段变成自己的方法和字段**，提供了一种更加类型（接口）组合方式：
+- go 中没有继承的概念，继承通过`embedding`来实现。所谓`embedding`就是直接将**父类的方法和字段变成自己的方法和字段**，提供了一种更加类型（接口）组合方式：
 
-    ```go
-    // io.ReadWrite就是一个接口的组合，直接包含了Reader/Write的接口方法
-    // ReadWriter stores pointers to a Reader and a Writer.
-    // It implements io.ReadWriter.
-    type ReadWriter struct {
-        *Reader  // *bufio.Reader
-        *Writer  // *bufio.Writer
-    }
-    ```
+  ```go
+  // io.ReadWrite就是一个接口的组合，直接包含了Reader/Write的接口方法
+  // ReadWriter stores pointers to a Reader and a Writer.
+  // It implements io.ReadWriter.
+  type ReadWriter struct {
+      *Reader  // *bufio.Reader
+      *Writer  // *bufio.Writer
+  }
+  ```
 
-    注意，`embedding`不需要制定**变量名称**，如果制定了，就不是嵌入，而是定义成员变量，这样子还需要自己定义相关的方法实现，才算是有对应的接口：
+  注意，`embedding`不需要制定**变量名称**，如果制定了，就不是嵌入，而是定义成员变量，这样子还需要自己定义相关的方法实现，才算是有对应的接口：
 
-    ```go
-    type ReadWriter struct {
-        reader *Reader
-        writer *Writer
-    }
+  ```go
+  type ReadWriter struct {
+      reader *Reader
+      writer *Writer
+  }
 
-    // 还需要自己重新实现对应的接口方法
-    func (rw *ReadWriter) Read(p []byte) (n int, err error) {
-        return rw.reader.Read(p)
-    }
-    ```
+  // 还需要自己重新实现对应的接口方法
+  func (rw *ReadWriter) Read(p []byte) (n int, err error) {
+      return rw.reader.Read(p)
+  }
+  ```
 
-    对于`embedding`而言，其和继承不同的地方就在于，调用`embedding`类型的方法时，实际是一种**组合的关系**，会将方法委托到对应的实例方法上，就类似上面的代码实现。
+  对于`embedding`而言，其和继承不同的地方就在于，调用`embedding`类型的方法时，实际是一种**组合的关系**，会将方法委托到对应的实例方法上，就类似上面的代码实现。
 
-    同时我们可以再构造的时候，制定组合的对象：
+  同时我们可以再构造的时候，制定组合的对象：
 
-    ```go
-    type Job struct {
-        Command string
-        *log.Logger
-    }
+  ```go
+  type Job struct {
+      Command string
+      *log.Logger
+  }
 
-    func NewJob(command string, logger *log.Logger) *Job {
-        return &Job{command, logger}
-    }
+  func NewJob(command string, logger *log.Logger) *Job {
+      return &Job{command, logger}
+  }
 
-    // or with a composite literal
-    // job := &Job{command, log.New(os.Stderr, "Job: ", log.Ldate)}
-    ```
+  // or with a composite literal
+  // job := &Job{command, log.New(os.Stderr, "Job: ", log.Ldate)}
+  ```
 
-    可以使用**最里面的类名称**做为实际的组合对象进行返回，比如：
+  可以使用**最里面的类名称**做为实际的组合对象进行返回，比如：
 
-    ```go
-    func (job *Job) Printf(format string, args ...interface{}) {
-        job.Logger.Printf("%q: %s", job.Command, fmt.Sprintf(format, args...))
-    }
-    ```
+  ```go
+  func (job *Job) Printf(format string, args ...interface{}) {
+      job.Logger.Printf("%q: %s", job.Command, fmt.Sprintf(format, args...))
+  }
+  ```
 
-    如果嵌入的类名称或者相同层级的字段相同的话，**只要外围不直接使用冲突的名称**，系统不会报错，因为只需要扩展方法和属性而已，否则会报错。
+  如果嵌入的类名称或者相同层级的字段相同的话，**只要外围不直接使用冲突的名称**，系统不会报错，因为只需要扩展方法和属性而已，否则会报错。
 
-    > if the same name appears at the same nesting level, it is usually an error; it would be erroneous to embed log.Logger if the Job struct contained another field or method called Logger. However, if the duplicate name is never mentioned in the program outside the type definition, it is OK. This qualification provides some protection against changes made to types embedded from outside; there is no problem if a field is added that conflicts with another field in another subtype if neither field is ever used.
+  > if the same name appears at the same nesting level, it is usually an error; it would be erroneous to embed log.Logger if the Job struct contained another field or method called Logger. However, if the duplicate name is never mentioned in the program outside the type definition, it is OK. This qualification provides some protection against changes made to types embedded from outside; there is no problem if a field is added that conflicts with another field in another subtype if neither field is ever used.
 
-- go的并发设计哲学：
+- go 的并发设计哲学：
 
-    > Do not communicate by sharing memory; instead, share memory by communicating.
+  > Do not communicate by sharing memory; instead, share memory by communicating.
 
-    go强大的concurrent的工具，天然可以用作*生产者-消费者模式*的处理队列，比如文档中提到的 `A Leaky Buffer` 示例。
+  go 强大的 concurrent 的工具，天然可以用作*生产者-消费者模式*的处理队列，比如文档中提到的 `A Leaky Buffer` 示例。
 
-    该例是RPC框架的一个抽象，客户端（这里类producer）不停读取网络数据，获取到数据后，放入有界空闲队列中，起到了缓存池的作用。处理完数据后，放入空闲池中，等待一个服务端（这里类consumer）来消费，使用一个无缓存的channel进行空闲Buffer的传递（个人理解：如果处理方比较繁忙，生产方可以直接休息，而不用接受更多的生产需求，所以使用无缓存的channel在这里有这样一层控制语义）
+  该例是 RPC 框架的一个抽象，客户端（这里类 producer）不停读取网络数据，获取到数据后，放入有界空闲队列中，起到了缓存池的作用。处理完数据后，放入空闲池中，等待一个服务端（这里类 consumer）来消费，使用一个无缓存的 channel 进行空闲 Buffer 的传递（个人理解：如果处理方比较繁忙，生产方可以直接休息，而不用接受更多的生产需求，所以使用无缓存的 channel 在这里有这样一层控制语义）
 
-    ```go
-    var freeList = make(chan *Buffer, 100)
-    var serverChan = make(chan *Buffer)
+  ```go
+  var freeList = make(chan *Buffer, 100)
+  var serverChan = make(chan *Buffer)
 
-    func client() {
-        for {
-            var b *Buffer
-            // Grab a buffer if available; allocate if not.
-            select {
-            case b = <-freeList:
-                // Got one; nothing more to do.
-            default:
-                // None free, so allocate a new one.
-                b = new(Buffer)
-            }
-            load(b)              // Read next message from the net.
+  func client() {
+      for {
+          var b *Buffer
+          // Grab a buffer if available; allocate if not.
+          select {
+          case b = <-freeList:
+              // Got one; nothing more to do.
+          default:
+              // None free, so allocate a new one.
+              b = new(Buffer)
+          }
+          load(b)              // Read next message from the net.
 
-            // 无缓存channel，也可能能有多个协程等待，只是只能一个被唤醒
-            serverChan <- b      // Send to server.
-        }
-    }
-    ```
+          // 无缓存channel，也可能能有多个协程等待，只是只能一个被唤醒
+          serverChan <- b      // Send to server.
+      }
+  }
+  ```
 
-    ```go
-    func server() {
-        for {
-            b := <-serverChan    // Wait for work.
-            process(b)
-            // Reuse buffer if there's room.
-            select {
-            case freeList <- b:
-                // Buffer on free list; nothing more to do.
-            default:
-                // Free list full, just carry on.
-                // 这里可能存在，存在满池的情况：server处理非常满，client处理很快，
-                // 又将数据填满freeList的buffer，上一轮处理的数据就放不回去了
-            }
-        }
-    }
-    ```
+  ```go
+  func server() {
+      for {
+          b := <-serverChan    // Wait for work.
+          process(b)
+          // Reuse buffer if there's room.
+          select {
+          case freeList <- b:
+              // Buffer on free list; nothing more to do.
+          default:
+              // Free list full, just carry on.
+              // 这里可能存在，存在满池的情况：server处理非常满，client处理很快，
+              // 又将数据填满freeList的buffer，上一轮处理的数据就放不回去了
+          }
+      }
+  }
+  ```
 
 - `panic`不要轻易使用，更多的使用 `error` 进行错误的处理。一种使用 `panic` 的场景是用在 `init` 函数中，如果初始化时候数据状态不对，直接退出程序是一个不错的选择：
 
-    ```go
-    var user = os.Getenv("USER")
+  ```go
+  var user = os.Getenv("USER")
 
-    func init() {
-        if user == "" {
-            panic("no value for $USER")
-        }
-    }
-    ```
+  func init() {
+      if user == "" {
+          panic("no value for $USER")
+      }
+  }
+  ```
 
 - 关于*interface-and-methods*，文档中的例子非常生动：
 
-    在go中，任何类型都可以绑定方法，所以任何的东西在go中都可以满足接口的要求，比如 `http.Handler` 接口：
+  在 go 中，任何类型都可以绑定方法，所以任何的东西在 go 中都可以满足接口的要求，比如 `http.Handler` 接口：
 
-    ```go
-    type Handler interface {
-        ServeHTTP(ResponseWriter, *Request)
+  ```go
+  type Handler interface {
+      ServeHTTP(ResponseWriter, *Request)
+  }
+  ```
+
+  这里，`ResponseWriter` 是一个接口，实现了 `Write` 方法，一般接口在 go 中都直接**使用值类型**；而 `Request` 是一个结构体，所以这里使用指针类型。
+
+  如果需要保存状态，比如容易想到，使用结构体，定义状态数据，并实现接口方法：
+
+  ```go
+  // Simple counter server.
+  type Counter struct {
+      n int
+  }
+
+  func (ctr *Counter) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+      ctr.n++
+      fmt.Fprintf(w, "counter = %d\n", ctr.n)
+  }
+  ```
+
+  但实际上，这里其实直接用 int 就可以表示 `Counter` 类型：
+
+  ```go
+  // 直接int表示类型，实现对应方法，很有意思
+  // int本身就记录了自身的状态
+  type Counter int
+
+  func (ctr *Counter) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+      *ctr++
+      fmt.Fprintf(w, "counter = %d\n", *ctr)
+  }
+  ```
+
+  如果需要访问网页的时候，存在一些通知事件，可以将 channel 直接作为类型定义：
+
+  ```go
+  // A channel that sends a notification on each visit.
+  // (Probably want the channel to be buffered.)
+  type Chan chan *http.Request
+
+  func (ch Chan) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+      ch <- req
+      fmt.Fprint(w, "notification sent")
+  }
+  ```
+
+  最后，如果我们打算将符合签名的原始方法，转化为无状态的实现 `ServeHTTP` 的类型，可以直接将 **函数** 定义为一个类型，调用该类型就等于进行函数的强制转换：
+
+  ```go
+  // The HandlerFunc type is an adapter to allow the use of
+  // ordinary functions as HTTP handlers.  If f is a function
+  // with the appropriate signature, HandlerFunc(f) is a
+  // Handler object that calls f.
+  type HandlerFunc func(ResponseWriter, *Request)
+
+  // ServeHTTP calls f(w, req).
+  func (f HandlerFunc) ServeHTTP(w ResponseWriter, req *Request) {
+      f(w, req)
+  }
+
+  // Argument server.
+  func ArgServer(w http.ResponseWriter, req *http.Request) {
+      fmt.Fprintln(w, os.Args)
+  }
+
+  http.Handle("/args", http.HandlerFunc(ArgServer))
+  ```
+
+  总结起来：
+
+  1. go 中接口就是方法的集合
+  2. 几乎 go 中任何元素都可以定义为一个 type
+  3. type 不一定只能用 struct 来包含状态，元素本身就可以作为 type 的状态
+  4. type 本质上是**嫁接数据和接口的桥梁**
+
+## book-gopl
+
+记录学习[go-programming-langure](https://github.com/adonovan/gopl.io/)一书的笔记。
+
+### defer-return
+
+defer 在 return 之后执行，所以可以用来 debug 返回值信息，甚至是改变返回值数据。
+
+```go
+func double(x int) (result int) {
+    // debug result value
+    defer func() {fmt.Printf("double(%d)=%d)", x, result}()
+    return x+x
+}
+
+func trip(x int) (result int) {
+    // hook result
+    defer func() { result += x }()
+    return double(x)
+}
+```
+
+### defer-in-for-loop
+
+defer 是在其定义的函数执行结束之后执行，如果在 for 循环中多次调用 defer，并不会在下一次循环执行时调用 defer，而是推迟到函数执行之后：
+
+```go
+for _, filename : range filenames {
+    f, err := os.Open(filename)
+    if err != nil {
+        return err
     }
-    ```
+    defer f.Close() // NOTE: risky; could run out of file
+    // do something
+}
+```
 
-    这里，`ResponseWriter` 是一个接口，实现了 `Write` 方法，一般接口在go中都直接**使用值类型**；而 `Request` 是一个结构体，所以这里使用指针类型。
+上面的代码如果有非常多文件打开，可能导致文件描述符被好耗尽。一个解决方法时将循环体中的 defer 放到另一个函数中：
 
-    如果需要保存状态，比如容易想到，使用结构体，定义状态数据，并实现接口方法：
-
-    ```go
-    // Simple counter server.
-    type Counter struct {
-        n int
+```go
+for _, filename : range filenames {
+    if err : doFile(filename); err != nil {
+        return err
     }
+}
 
-    func (ctr *Counter) ServeHTTP(w http.ResponseWriter, req *http.Request) {
-        ctr.n++
-        fmt.Fprintf(w, "counter = %d\n", ctr.n)
+func doFile(filename string) error {
+    f, err := os.Open(filename)
+    if err != nil {
+        return err
     }
-    ```
+    defer f.Close()
+    // do something
+}
+```
 
-    但实际上，这里其实直接用int就可以表示 `Counter` 类型：
+### anynomous-struct
 
-    ```go
-    // 直接int表示类型，实现对应方法，很有意思
-    // int本身就记录了自身的状态
-    type Counter int
+go 中支持定义匿名的结构，一方面可以使用 struct 的字段来组合数据，类似于一个动态的 json-like-object；另一方面，利用内嵌内嵌的方式，匿名的 struct 也可以有对应的类方法。
 
-    func (ctr *Counter) ServeHTTP(w http.ResponseWriter, req *http.Request) {
-        *ctr++
-        fmt.Fprintf(w, "counter = %d\n", *ctr)
+考虑一个 cache 的实现，用两个包级别的变量来定义 cache 和对应的锁：
+
+```go
+var (
+    mu sync.Mutex   // guards mapping
+    mapping = make(map[string]string)
+)
+
+func LookUp(key string) string {
+    mu.Lock()
+    v := mapping[key]
+    mu.Unlock()
+    return v
+}
+```
+
+用匿名 struct 可以改写成为：
+
+```go
+cache := struct {
+    // 内嵌了Mutex的方法
+    sync.Mutex
+    mapping map[string]string
+}{
+    mapping: make(map[string]string)
+}
+
+func LookUp(key string) string {
+    cache.Lock()
+    v := cache.mapping[key]
+    cache.Unlock()
+    return v
+}
+```
+
+### nil-interface-vs-nil-interface-value
+
+在 go 中，interface 其实时一个(type, value)的二元组，如果有一个 T 类型的 nil 值給 interface 赋值，对应的 interface 不是 nil，而时 type 为 T，但 value 为 nil，单独用 nil 判断 interface 会有 panic 的风险：
+
+```go
+func f(out io.Writer) {
+    if out != nil {
+        out.Write([]byte("hello world"))
     }
-    ```
+}
 
-    如果需要访问网页的时候，存在一些通知事件，可以将channel直接作为类型定义：
+func main() {
+    var buf *bytes.Buffer
+    f(buf)  // NOTE: subtly incorrect!
+}
+```
 
-    ```go
-    // A channel that sends a notification on each visit.
-    // (Probably want the channel to be buffered.)
-    type Chan chan *http.Request
+nil 可做为类型 T 的有效接收者，比如 `*os.File`，接收 nil 后依然可以工作，但对于 `*bytes.Buffer` 不符合要求，如果用 nil 调用 `Write` 方法，违反了其接口协议：接受者必须非空。
 
-    func (ch Chan) ServeHTTP(w http.ResponseWriter, req *http.Request) {
-        ch <- req
-        fmt.Fprint(w, "notification sent")
+一个解决方法是，同意使用接口类型，而不是具体的实现类型：
+
+```go
+func f(out io.Writer) {
+    if out != nil {
+        out.Write([]byte("hello world"))
     }
-    ```
+}
 
-    最后，如果我们打算将符合签名的原始方法，转化为无状态的实现 `ServeHTTP` 的类型，可以直接将 **函数** 定义为一个类型，调用该类型就等于进行函数的强制转换：
+func main() {
+    var buf io.Writer // = new(bytes.Buffer)
+    f(buf)
+}
+```
 
-    ```go
-    // The HandlerFunc type is an adapter to allow the use of
-    // ordinary functions as HTTP handlers.  If f is a function
-    // with the appropriate signature, HandlerFunc(f) is a
-    // Handler object that calls f.
-    type HandlerFunc func(ResponseWriter, *Request)
+或者利用反射，检测接口的 value 是不是 nil，参考[这里](https://medium.com/@mangatmodi/go-check-nil-interface-the-right-way-d142776edef1)
 
-    // ServeHTTP calls f(w, req).
-    func (f HandlerFunc) ServeHTTP(w ResponseWriter, req *Request) {
-        f(w, req)
-    }
+```go
+// 这里如果i的接口value是一个值类型，调用IsNil会报错
+func isNil(i interface{}) bool {
+  return i == nil || reflect.ValueOf(i).IsNil()
+}
 
-    // Argument server.
-    func ArgServer(w http.ResponseWriter, req *http.Request) {
-        fmt.Fprintln(w, os.Args)
-    }
-
-    http.Handle("/args", http.HandlerFunc(ArgServer))
-    ```
-
-    总结起来：
-
-    1. go中接口就是方法的集合
-    2. 几乎go中任何元素都可以定义为一个type
-    3. type不一定只能用struct来包含状态，元素本身就可以作为type的状态
-    4. type本质上是**嫁接数据和接口的桥梁**
+// 先判断i的类型，再调用，更加安全
+func isNilFixed(i interface{}) bool {
+ if i == nil {
+  return true
+ }
+ switch reflect.TypeOf(i).Kind() {
+ case reflect.Ptr, reflect.Map, reflect.Array, reflect.Chan, reflect.Slice:
+  return reflect.ValueOf(i).IsNil()
+ }
+ return false
+}
+```
 
 ## misc
 
@@ -773,9 +923,9 @@ go 中几个有用的，和别的编程语言不太一样的格式控制符：
 
 ### goproxy
 
-大陆的官方本地代理服务，go的package挂载CDN，具体参考项目主页[goproxy.cn](https://github.com/goproxy/goproxy.cn)
+大陆的官方本地代理服务，go 的 package 挂载 CDN，具体参考项目主页[goproxy.cn](https://github.com/goproxy/goproxy.cn)
 
-在mac中需要配置环境变量：
+在 mac 中需要配置环境变量：
 
 ```bash
 export GO111MODULE=on
