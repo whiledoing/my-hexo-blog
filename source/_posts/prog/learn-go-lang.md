@@ -867,19 +867,196 @@ func main() {
 ```go
 // 这里如果i的接口value是一个值类型，调用IsNil会报错
 func isNil(i interface{}) bool {
-  return i == nil || reflect.ValueOf(i).IsNil()
+    return i == nil || reflect.ValueOf(i).IsNil()
 }
 
 // 先判断i的类型，再调用，更加安全
 func isNilFixed(i interface{}) bool {
- if i == nil {
-  return true
- }
- switch reflect.TypeOf(i).Kind() {
- case reflect.Ptr, reflect.Map, reflect.Array, reflect.Chan, reflect.Slice:
-  return reflect.ValueOf(i).IsNil()
- }
- return false
+    if i == nil {
+        return true
+    }
+    switch reflect.TypeOf(i).Kind() {
+    case reflect.Ptr, reflect.Map, reflect.Array, reflect.Chan, reflect.Slice:
+        return reflect.ValueOf(i).IsNil()
+    }
+    return false
+}
+```
+
+### switch-type
+
+switch语句会隐式的创建一个语言块，所以，在switch中的变量可以被重新定义，并且覆盖外面的变量：
+
+```go
+func sqlQuote(x interface{}) string {
+    // 惯用方法，使用相同的名字重新赋值
+    switch x := x.(type) {
+    case nil:
+        return "NULL"
+    case int, uint:
+        return fmt.Sprintf("%d", x) // x has type interface{} here.
+    case bool:
+        if x {
+            return "TRUE"
+        }
+        return "FALSE"
+    case string:
+        return sqlQuoteString(x) // (not shown)
+    default:
+        panic(fmt.Sprintf("unexpected type %T: %v", x, x))
+    }
+}
+```
+
+### about-design-interface
+
+> 当设计一个新的包时，新的Go程序员总是通过创建一个接口的集合开始和后面定义满足它们的具体类型。这种方式的结果就是有很多的接口，它们中的每一个仅只有一个实现。不要再这么做了。这种接口是不必要的抽象；它们也有一个运行时损耗。接口只有当有两个或两个以上的具体类型必须以相同的方式进行处理时才需要。
+>
+> 当一个接口只被一个单一的具体类型实现时有一个例外，就是由于它的依赖，这个具体类型不能和这个接口存在在一个相同的包中。这种情况下，一个接口是解耦这两个包的一个好方式。
+>
+> 因为在Go语言中只有当两个或更多的类型实现一个接口时才使用接口，它们会从特定的实现细节中抽象出来。结果就是有更少和更简单方法（和o.Writer或fmt.Stringer一样只有一个）的更小的接口。当新的类型出现时，小的接口更容易满足。对于接口设计的一个好标准就是 **ask only for what you need（只考虑你需要的东西）**
+
+### concurrent-memo
+
+使用go的同步原语实现并发缓存结构，具体[参考](https://books.studygolang.com/gopl-zh/ch9/ch9-07.html)
+
+书中提到了2种方式，一种基于加锁，其思想和java的并发编程非常类似：
+
+- 使用future隔离结果和调用协程
+- future对象加入通道进行协程同步
+
+自己实现了一个版本，和书中的稍微有些区别：使用读写锁加速效率，毕竟对于读多写少的缓存而言，将读写加锁分开，可以有效提高并发度：
+
+```go
+type Func func(string) (interface{}, error)
+
+type future struct {
+	v     interface{}
+	e     error
+	ready chan struct{}
+}
+
+type Memo struct {
+	f Func
+	l sync.RWMutex
+	m map[string]*future
+}
+
+func New(f Func) *Memo {
+	return &Memo{f: f, m: make(map[string]*future)}
+}
+
+func (m *Memo) Get(key string) (interface{}, error) {
+	// 1. 先用读锁获取数据
+	m.l.RLock()
+	f := m.m[key]
+	m.l.RUnlock()
+
+	// 2. 对于value为指针数据，直接判断nil判断存在性
+	if f == nil {
+
+		// 3. 加写锁，再读取一次，保障一定只有一次进入set语义
+		m.l.Lock()
+		newf := m.m[key]
+		if newf == nil {
+			f = &future{ready: make(chan struct{})}
+			f.v, f.e = m.f(key)
+			m.m[key] = f
+
+			// 4. 利用close进行协程同步
+			close(f.ready)
+		} else {
+			f = newf
+		}
+		m.l.Unlock()
+	}
+
+	// 5. 等待ready，close之后的channel，会直接返回
+	<-f.ready
+	return f.v, f.e
+}
+```
+
+另外一种就是基于go的并发控制哲学：**share memory by communicating**
+
+- 所有读写缓存请求代理到唯一控制的主协程
+- 主协程控制所有cache的读和写
+- 请求中加入channel进行流程同步
+- 主协程一定不能有太重的阻塞操作，将操作都异步化。
+
+[代码参考](https://github.com/adonovan/gopl.io/tree/master/ch9/memo5)
+
+```go
+// Func is the type of the function to memoize.
+type Func func(key string) (interface{}, error)
+
+// A result is the result of calling a Func.
+type result struct {
+	value interface{}
+	err   error
+}
+
+type entry struct {
+	res   result
+	ready chan struct{} // closed when res is ready
+}
+
+// A request is a message requesting that the Func be applied to key.
+type request struct {
+	key      string
+	response chan<- result // the client wants a single result
+}
+
+type Memo struct{ requests chan request }
+
+// New returns a memoization of f.  Clients must subsequently call Close.
+func New(f Func) *Memo {
+	memo := &Memo{requests: make(chan request)}
+	go memo.server(f)
+	return memo
+}
+
+func (memo *Memo) Get(key string) (interface{}, error) {
+    // 请求都通过带有channel的请求和主协程交互
+	response := make(chan result)
+	memo.requests <- request{key, response}
+	res := <-response
+	return res.value, res.err
+}
+
+func (memo *Memo) Close() { close(memo.requests) }
+
+//!-get
+
+//!+monitor
+
+func (memo *Memo) server(f Func) {
+	cache := make(map[string]*entry)
+	for req := range memo.requests {
+		e := cache[req.key]
+		if e == nil {
+			// This is the first request for this key.
+			e = &entry{ready: make(chan struct{})}
+			cache[req.key] = e
+			go e.call(f, req.key) // call f(key)
+        }
+        // 可能阻塞都代理到别的协程重，保障主协程的高速运行
+		go e.deliver(req.response)
+	}
+}
+
+func (e *entry) call(f Func, key string) {
+	// Evaluate the function.
+	e.res.value, e.res.err = f(key)
+	// Broadcast the ready condition.
+	close(e.ready)
+}
+
+func (e *entry) deliver(response chan<- result) {
+	// Wait for the ready condition.
+	<-e.ready
+	// Send the result to the client.
+	response <- e.res
 }
 ```
 
