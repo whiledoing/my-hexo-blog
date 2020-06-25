@@ -93,7 +93,7 @@ function AppendByte(slice []byte, data ...byte) []byte {
     slice = slice[:n]
 
     // 填充新的数值
-    copy(slice[m:n], byte)
+    copy(slice[m:n], data)
     return slice
 }
 
@@ -258,7 +258,7 @@ func main() {
 使用`WaitGroup`做为同步机制，控制多个协程的执行计数：
 
 ```go
-// 注意使用WaitGroup需要传递指正，因为会修改其数据
+// 注意使用WaitGroup需要传递指针，因为会修改其数据
 worker := func(id int, wg *sync.WaitGroup) {
     // defer非常精髓，保证一定可以退出执行
     defer wg.Done()
@@ -533,7 +533,7 @@ module github.com/whiledong/test
 - > The rule about pointers vs. values for receivers is that value methods can be invoked on pointers and values, but pointer methods can only be invoked on pointers.
   > This rule arises because pointer methods can modify the receiver; invoking them on a value would cause the method to receive a copy of the value, so any modifications would be discarded. The language therefore disallows this mistake.
 
-  指针定义的方法，就表示数据是可变的，只能接受指针数据。
+  指针定义的方法，就表示数据是可变的，只能接受指针数据。另一个角度，如果定义值类型数据，就表示**该数据是不可变**的，不可以给到指针定义的分发。
 
 - go 中没有继承的概念，继承通过`embedding`来实现。所谓`embedding`就是直接将**父类的方法和字段变成自己的方法和字段**，提供了一种更加类型（接口）组合方式：
 
@@ -742,12 +742,14 @@ module github.com/whiledong/test
 defer 在 return 之后执行，所以可以用来 debug 返回值信息，甚至是改变返回值数据。
 
 ```go
+// 返回信息
 func double(x int) (result int) {
     // debug result value
     defer func() {fmt.Printf("double(%d)=%d)", x, result}()
     return x+x
 }
 
+// 改变信息
 func trip(x int) (result int) {
     // hook result
     defer func() { result += x }()
@@ -757,7 +759,7 @@ func trip(x int) (result int) {
 
 ### defer-in-for-loop
 
-defer 是在其定义的函数执行结束之后执行，如果在 for 循环中多次调用 defer，并不会在下一次循环执行时调用 defer，而是推迟到函数执行之后：
+defer 是在**其定义的函数执行结束**之后执行，如果在 for 循环中多次调用 defer，并不会在下一次循环执行时调用 defer，而是推迟到函数执行之后：
 
 ```go
 for _, filename : range filenames {
@@ -774,7 +776,7 @@ for _, filename : range filenames {
 
 ```go
 for _, filename : range filenames {
-    if err : doFile(filename); err != nil {
+    if err := doFile(filename); err != nil {
         return err
     }
 }
@@ -791,7 +793,7 @@ func doFile(filename string) error {
 
 ### anynomous-struct
 
-go 中支持定义匿名的结构，一方面可以使用 struct 的字段来组合数据，类似于一个动态的 json-like-object；另一方面，利用内嵌内嵌的方式，匿名的 struct 也可以有对应的类方法。
+go 中支持定义匿名的结构，一方面可以使用 struct 的字段来组合数据，类似于一个动态的 json-like-object；另一方面，利用内嵌的方式，匿名的 struct 也可以有对应的类方法。
 
 考虑一个 cache 的实现，用两个包级别的变量来定义 cache 和对应的锁：
 
@@ -830,7 +832,7 @@ func LookUp(key string) string {
 
 ### nil-interface-vs-nil-interface-value
 
-在 go 中，interface 其实时一个(type, value)的二元组，如果有一个 T 类型的 nil 值給 interface 赋值，对应的 interface 不是 nil，而时 type 为 T，但 value 为 nil，单独用 nil 判断 interface 会有 panic 的风险：
+在 go 中，interface 其实是一个(type, value)的二元组，如果有一个 T 类型的 nil 值給 interface 赋值，对应的 interface 不是 nil，而时 type 为 T，但 value 为 nil，单独用 nil 判断 interface 会有 panic 的风险：
 
 ```go
 func f(out io.Writer) {
@@ -1108,3 +1110,13 @@ go 中几个有用的，和别的编程语言不太一样的格式控制符：
 export GO111MODULE=on
 export GOPROXY=https://goproxy.cn
 ```
+
+## go-land 技巧
+
+go-land有几个非常好用的技巧：
+
+- 使用`Extract Variable`，提取当前的上下文内容为一个变量。
+- 使用`Inline Variable`，将当前变量嵌入到上下文中。
+- completion时候，使用tab可以替换当前的内容，比如将printf替换到println，而使用回车不会替换，而是插入。
+- 连续两次使用completion按键，会提示可将当前上下文作为第一个变量的函数列表。
+- postfix completion，非常有意思，使用`rr`表示`return error`，在一个函数返回error的情况下，改成如果发现`err != nil`返回error的语句。
