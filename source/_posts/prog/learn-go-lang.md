@@ -1111,6 +1111,67 @@ export GO111MODULE=on
 export GOPROXY=https://goproxy.cn
 ```
 
+### switch中设置timer
+
+考虑这样的场景，设置一个1s的ticker，和一个2s的stop timer。如果写成下面的样子，stop timer永远不会执行：
+
+```go
+	for {
+		select {
+		case <-time.After(2*time.Second):
+			goto exit
+		case t := <-time.Tick(time.Second)
+			fmt.Printf("time meet at %v\n", t)
+		}
+	}
+
+exit:
+	fmt.Printf("exit")
+```
+
+因为在select逻辑中，每次select执行都会**重新构造case的运行结构体，对应的channel也会重新构造**，所以，在select中构造的channel，在
+重新执行select的时候，又会重新构造。
+
+改成下面的形式也不对：
+
+```go
+	for {
+        // 治标不治本，到了下一次for的时候，重新构造的timer，存在同样的问题。设定时间小的先执行，且永远先执行
+        afterTimeChannel := time.After(2 * time.Second)
+        tickTimeChannel := time.Tick(time.Second)
+
+		select {
+		case <-afterTimeChannel:
+			goto exit
+		case t := <-tickTimeChannel:
+			fmt.Printf("time meet at %v\n", t)
+		}
+	}
+
+exit:
+	fmt.Printf("exit")
+```
+
+需要将timer的构造放在更全局的位置：
+
+```go
+	afterTimeChannel := time.After(2 * time.Second)
+	tickTimeChannel := time.Tick(time.Second)
+
+    // 理解：for和select是一个统一逻辑体，timer放在for的外面
+	for {
+		select {
+		case <-afterTimeChannel:
+			goto exit
+		case t := <-tickTimeChannel:
+			fmt.Printf("time meet at %v\n", t)
+		}
+	}
+
+exit:
+	fmt.Printf("exit")
+```
+
 ## go-land 技巧
 
 go-land有几个非常好用的技巧：
