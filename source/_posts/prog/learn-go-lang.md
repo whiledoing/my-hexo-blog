@@ -135,9 +135,9 @@ for k := range kvs {
 
 ### error
 
-go 的 error 机制，类似于 C 的方式，在返回值中透传。个人觉得还是挺好的，可以保持调用函数后，优先判断错误，然后短路返回的调用风格。试的代码逻辑更加健壮,但是一定程度上也增加了冗余.
+go 的 `error` 机制，类似于 C 的方式，在返回值中透传。个人觉得还是挺好的，可以保持调用函数后，优先判断错误，然后短路返回的调用风格。代码逻辑更健壮,但一定程度上也增加了冗余.
 
-go 的 error 其实是一个 interface 只要定义对应的`Error() string`方法签名,就是一个自定义的 error 类：
+go 的 `error` 其实是一个 `interface` 只要定义对应的`Error() string`方法签名,就是一个自定义的 `error` 类：
 
 ```go
 func (e *argError) Error() string {
@@ -175,15 +175,15 @@ func testError() {
 }
 ```
 
-为什么 error 默认都使用指针，根据这个[custom-errors-in-golang-and-pointer-receivers](https://stackoverflow.com/questions/50333428/custom-errors-in-golang-and-pointer-receivers)的回答。一个可能的考虑点是，使用 error 进行逻辑判定时, 会进行等号检测，需要判定的是 is 概念，而不是值相同的概念。所以，使用指针表示错误，可以直接用等号进行 is 检测。
+为什么 `error` 默认都使用指针，根据这个[custom-errors-in-golang-and-pointer-receivers](https://stackoverflow.com/questions/50333428/custom-errors-in-golang-and-pointer-receivers)的回答。一个可能的考虑点是，使用 `error` 进行逻辑判定时, 会进行等号检测，需要判定的是 is 概念，而不是值相同的概念。所以，使用指针表示错误，可以直接用等号进行 is 检测。
 
 ### channel
 
 channel 真是 go-lang 的精髓。
 
 - none-buffer 的通道，必须要有数据等待接受，才可以写入；而 buffer 的通道，可以直接写入，不需要有数据接收。
-- 使用 select 可以**同步等待多个通道**；或者使用**default**语句，表示等待不到数据的默认选择；或者使用`time.After(time.Seconds)`表示等待一定时间的超时。
-- `close`一个通道，表示通道内不会再有更多的数据写入，接受通道数据的携程，可以感知这种情况。如果使用`for job := range jobs`的方式等待通道，会在通道关闭后结束，非常赞的语法糖。使用这个技巧，可以非常容易的实现**协程池**，多个协程并发的等待队列的工作任务，实现参考[worker-pools](https://gobyexample.com/worker-pools)
+- 使用 select 可以**同步等待多个通道**或者使用**default**语句，表示等待不到数据的默认选择；或者使用`time.After(time.Seconds)`表示等待一定时间的超时。
+- `close`一个通道，表示通道内不会再有更多的数据写入，接受通道数据的协程，可以感知这种情况。如果使用`for job := range jobs`的方式等待通道，会在通道关闭后结束，非常赞的语法糖。使用这个技巧，可以非常容易的实现**协程池**，多个协程并发的等待队列的工作任务，实现参考[worker-pools](https://gobyexample.com/worker-pools)
 
 ```go
 func ping(pings chan<- string, msg string) {
@@ -279,7 +279,7 @@ for i := 0; i < 4; i++ {
 wg.Wait()
 ```
 
-使用 go 的 channel 阻塞机制，可以很容易的实现令牌桶限流。每隔一段时间就往 channel 中放入令牌，而处理请求时候，必须有令牌才可以放行。基于 channel 的 buffer 机制，可以控制初始的令牌个数：
+使用 go 的 channel 阻塞机制，可以很容易实现令牌桶限流。每隔一段时间就往 channel 中放入令牌，而处理请求时候，必须有令牌才可以放行。基于 channel 的 buffer 机制，可以控制初始的令牌个数：
 
 ```go
 // 初始个数
@@ -293,7 +293,7 @@ go func() {
     for t := range time.Tick(200 * time.Millisecond) {
         burstyLimiter <- t
     }
-} ()
+}()
 
 // 投放任务，使用close便于使用range
 jobs := make(chan int, 5)
@@ -335,7 +335,7 @@ writes := make(chan writeOp)
 go func() {
     m := make(map[int]int)
     for {
-        // 可实现全局mutex功能，只有一个任务可进入读或者写的状态
+        // 可实现全局mutex功能，只有一个任务可进入读或者写状态
         // 如果接受到一个读写请求，读写的等待都消除进行case的处理。这时，新的读写请求进不来，因为没有等待就没有写入。
         select {
         case read := <-reads:
@@ -535,7 +535,7 @@ module github.com/whiledong/test
 
   指针定义的方法，就表示数据是可变的，只能接受指针数据。另一个角度，如果定义值类型数据，就表示**该数据是不可变**的，不可以给到指针定义的分发。
 
-- go 中没有继承的概念，继承通过`embedding`来实现。所谓`embedding`就是直接将**父类的方法和字段变成自己的方法和字段**，提供了一种更加类型（接口）组合方式：
+- go 中没有继承的概念，继承通过`embedding`来实现。所谓`embedding`就是直接将**父类的方法和字段变成自己的方法和字段**，提供了一种更加简洁（接口）组合方式：
 
   ```go
   // io.ReadWrite就是一个接口的组合，直接包含了Reader/Write的接口方法
@@ -563,7 +563,7 @@ module github.com/whiledong/test
 
   对于`embedding`而言，其和继承不同的地方就在于，调用`embedding`类型的方法时，实际是一种**组合的关系**，会将方法委托到对应的实例方法上，就类似上面的代码实现。
 
-  同时我们可以再构造的时候，制定组合的对象：
+  同时我们可以在构造时，制定组合的对象：
 
   ```go
   type Job struct {
@@ -849,7 +849,7 @@ func main() {
 
 nil 可做为类型 T 的有效接收者，比如 `*os.File`，接收 nil 后依然可以工作，但对于 `*bytes.Buffer` 不符合要求，如果用 nil 调用 `Write` 方法，违反了其接口协议：接受者必须非空。
 
-一个解决方法是，同意使用接口类型，而不是具体的实现类型：
+一个解决方法是，统一使用接口类型，而不是具体的实现类型：
 
 ```go
 func f(out io.Writer) {
@@ -916,7 +916,7 @@ func sqlQuote(x interface{}) string {
 >
 > 当一个接口只被一个单一的具体类型实现时有一个例外，就是由于它的依赖，这个具体类型不能和这个接口存在在一个相同的包中。这种情况下，一个接口是解耦这两个包的一个好方式。
 >
-> 因为在Go语言中只有当两个或更多的类型实现一个接口时才使用接口，它们会从特定的实现细节中抽象出来。结果就是有更少和更简单方法（和o.Writer或fmt.Stringer一样只有一个）的更小的接口。当新的类型出现时，小的接口更容易满足。对于接口设计的一个好标准就是 **ask only for what you need（只考虑你需要的东西）**
+> 因为在Go语言中只有当两个或更多的类型实现一个接口时才使用接口，它们会从特定的实现细节中抽象出来。结果就是有更少和更简单方法（和io.Writer或fmt.Stringer一样只有一个）的更小的接口。当新的类型出现时，小的接口更容易满足。对于接口设计的一个好标准就是 **ask only for what you need（只考虑你需要的东西）**
 
 ### concurrent-memo
 
@@ -1042,7 +1042,7 @@ func (memo *Memo) server(f Func) {
 			cache[req.key] = e
 			go e.call(f, req.key) // call f(key)
         }
-        // 可能阻塞都代理到别的协程重，保障主协程的高速运行
+        // 阻塞都代理到别的协程中，保障主协程高速运行
 		go e.deliver(req.response)
 	}
 }

@@ -65,7 +65,7 @@ type entry struct {
 }
 ```
 
-- `read`是一个原子类型，因为该结构会被原子的变更（比如，讲dirty的内容替换到read中，需要重新生成一个read结构）
+- `read`是一个原子类型，因为该结构会被原子的变更（比如，将dirty内容替换到read中，需要重新生成一个read结构）
 - `dirty`就是一个原生的map类型，需要加锁保护
 - `entry`保存实际的数据，内部保存的是一个指针，dirty和read都记录相同内容的entry(修改其中内部的指针，就会修改对应的数值)
 
@@ -130,6 +130,9 @@ func (m *Map) Store(key, value interface{}) {
 func (m *Map) Load(key interface{}) (value interface{}, ok bool) {
 	read, _ := m.read.Load().(readOnly)
 	e, ok := read.m[key]
+
+	// read.amended 表示是否在dirty中存在数据，dirty升级到read之后，amended默认就是false
+	// 一旦dirty中写入数据，amended就被设置为true
 	if !ok && read.amended {
 		m.mu.Lock()
 		// Avoid reporting a spurious miss if m.dirty got promoted while we were
