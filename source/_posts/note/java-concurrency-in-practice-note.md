@@ -79,6 +79,7 @@ public class Test {
     }
 }
 ```
+
 ---
 
 一个加锁的原则是对不变性加锁：不变性条件中涉及的所有变量都需要由**同一个锁**来保护。
@@ -101,7 +102,7 @@ public class UnsafeCachingFactorizer implements Servlet {
                 // 注意访问的是clone，如果直接引用LastFactors，可能导致最后返回客户端的是别的线程修改后的数值，违背了不变性。
                factors = lastFactors.clone();
         }
-    
+
         if (factors == null) {
             // 将计算时间长的代码提取出来，不要放到同步块中
             factors = factor(i);
@@ -148,13 +149,13 @@ class OneValueCache {
 
     public OneValueCache(BigInteger i, BigInteger[] factors) {
         lastNumber = i;
-        
+
         // copy主要目的防止factors改变cache内部数值，毕竟factors是对外暴露的，有可能被调用者不小心修改。
         lastFactors = Arrays.copy(factors, factors.length);
     }
 
     public BigInteger[] getFactors(BigInteger i) {
-        if (lastNumber == null || !lastNumber.equals(i)) 
+        if (lastNumber == null || !lastNumber.equals(i))
             return null;
         else
             return Arrays.copy(lastFactors, lastFactors.length);
@@ -248,7 +249,7 @@ public class Memoizer2<A, V> implements Computable<A, v> {
                 public V call() throws InterruptedException {
                     return computer_impl(arg);
                 }
-            })            
+            })
 
             // 先把坑位站住，然后再异步执行
             cache.put(arg, future);
@@ -277,13 +278,13 @@ public class Memoizer3<A, V> implements Computable<A, v> {
                 public V call() throws InterruptedException {
                     return computer_impl(arg);
                 }
-            })            
+            })
 
             // 原子的访问，保证了并发安全性
             f = cache.putIfAbsent(arg, future);
 
             // 表示原来的数值，如果原来没有数据，说明第一个放入，执行future，否则，future表示第一次放入的数据，等待结果
-            if (f == null) 
+            if (f == null)
                 future.run();
             else
                 future = f;
@@ -292,7 +293,7 @@ public class Memoizer3<A, V> implements Computable<A, v> {
         try {
             return future.get();
         } catch (ExecutionException e) {
-            yhrow launderThrowable(e.getCause());
+            throw launderThrowable(e.getCause());
         }
     }
 }
@@ -316,13 +317,13 @@ java类库中使用Executor来执行任务，将任务的提交和任务的执�
 
 - 更好的管理线程资源。
 - 制定执行策略（有多个任务并发、任务执行顺序、可以等待的任务数量、队列饱和策略等）
-- 重用线程降低了线程创建和销毁的开销。（不过也有负面作用，比如ThreadLocal使用存在问题，因为同一个线程可能执行多个不同的任务，但ThreadLocal只专属于单一线程） 
+- 重用线程降低了线程创建和销毁的开销。（不过也有负面作用，比如ThreadLocal使用存在问题，因为同一个线程可能执行多个不同的任务，但ThreadLocal只专属于单一线程）
 
 ExecutorService接口扩展了Executor，在其中加入了对执行器进行生命管理的方法：
 
 - `shutdown`用来平缓关闭执行器：不再接受新的任务，同时等待已经提交的任务完成（包括队列中还没有运行的任务）
 - `shutdownNow`比较粗暴的关闭执行器：不再接受新的任务，同时尝试取消所有运行中的任务，也不会启动队列中没有运行的任务。
--ExecutorService关闭后的提交任务将由Rejected Execution Handler处理，一般是直接抛弃或者抛出`RejectedExecutionException`异常。
+- ExecutorService关闭后的提交任务将由`Rejected Execution Handler`处理，一般是直接抛弃或者抛出`RejectedExecutionException`异常。
 - `awitTermination`等待ExecutorService完全终止当前运行任务。
 - `isTerminated`表示是否已经完全终结。
 
@@ -346,6 +347,7 @@ public interface Runnable {
     public abstract void run();
 }
 ```
+
 `ExecutorService.execute`输入的是`Runnable`对象，其并不care返回值。如果要对任务的返回值进行控制，需要用到`Future`接口，该接口解耦了任务的运算和获取逻辑。Executor框架中的封装过程如下：
 
 - `RunnableFuture`接口扩展了`Runnable`，这样子可将该接口生成的Future放到`ExecutorService.execute`中
@@ -445,7 +447,7 @@ public class PrimeGenerator implements Runnable {
     @Override
     public void run() {
         // 其实这里并不用while检查中断状态，因为queue.put方法是阻塞方法会对中断的异常进行处理。
-        // 加上while的好处是可以提高总体相应，因为提前出中断就不需要计算generateNextPrime。
+        // 加上while的好处是可以提高总体响应，因为提前出中断就不需要计算generateNextPrime。
         while(!Thread.currentThread().isInterrupted()) {
             try {
                 queue.put(generateNextPrime());
@@ -511,61 +513,61 @@ public class PrimeGenerator implements Runnable {
 
 ```java
 public class ConcurrentPuzzleSolver<P, M> {
-    private final Puzzle<P, M> puzzle; 
-    private final ExecutorService exec; 
-    private final ConcurrentMap<P, Boolean> seen; 
+    private final Puzzle<P, M> puzzle;
+    private final ExecutorService exec;
+    private final ConcurrentMap<P, Boolean> seen;
 
     // 使用一个Latch达到阻塞通知的效果
-    final ValueLatch<Node<P, M>> solution = new ValueLatch<Node<P, M>>(); 
-    
-    public List<M> solve() throws InterruptedException { 
-        try { 
-            P p = puzzle.initialPosition(); 
-            exec.execute(newTask(p, null, null)); 
-            
+    final ValueLatch<Node<P, M>> solution = new ValueLatch<Node<P, M>>();
+
+    public List<M> solve() throws InterruptedException {
+        try {
+            P p = puzzle.initialPosition();
+            exec.execute(newTask(p, null, null));
+
             // 阻塞等待结果
-            Node<P, M> solnNode = solution.getValue(); 
-            return (solnNode == null) ? null : solnNode.asMoveList(); 
-        } finally { 
-            exec.shutdown(); 
+            Node<P, M> solnNode = solution.getValue();
+            return (solnNode == null) ? null : solnNode.asMoveList();
+        } finally {
+            exec.shutdown();
         }
     }
-    
-    protected Runnable newTask(P p, M m, Node<P,M> n) { 
-        return new SolverTask(p, m, n); 
+
+    protected Runnable newTask(P p, M m, Node<P,M> n) {
+        return new SolverTask(p, m, n);
     }
-    
+
     class SolverTask extends Node<P, M> implements Runnable {
-        public void run() { 
+        public void run() {
             // 这里非常关键：1）判断是否已经有结果，提前结束 2）原子的设置seen，防止重复运行相同结果
-            if (solution.isSet() || seen.putIfAbsent(pos, true) != null) 
-                return; 
+            if (solution.isSet() || seen.putIfAbsent(pos, true) != null)
+                return;
 
             if (puzzle.isGoal(pos))
-                solution.setValue(this); 
-            else 
+                solution.setValue(this);
+            else
                 // 其实是广度搜索，每一次搜索一个节点将可达的搜索放入队列，bfs的并行计算
-                for (M m : puzzle.legalMoves(pos)) 
+                for (M m : puzzle.legalMoves(pos))
                     exec.execute(newTask(puzzle.move(pos, m), m, this));
         }
     }
 }
 
-@ThreadSafe 
+@ThreadSafe
 public class ValueLatch<T> {
-    @GuardedBy("this") private T value = null; 
+    @GuardedBy("this") private T value = null;
     private final CountDownLatch done = new CountDownLatch(1);
 
-    public synchronized void setValue(T newValue) { 
-        if (done.getCount() != 0) { 
-            value = newValue; 
-            done.countDown(); 
-        } 
+    public synchronized void setValue(T newValue) {
+        if (done.getCount() != 0) {
+            value = newValue;
+            done.countDown();
+        }
     }
-    
-    public T getValue() throws InterruptedException { 
-        done.await(); 
-        synchronized (this) { return value; } 
+
+    public T getValue() throws InterruptedException {
+        done.await();
+        synchronized (this) { return value; }
     }
 }
 ```
@@ -573,27 +575,27 @@ public class ValueLatch<T> {
 代码的结构很通用，可以将串行搜索任务并行化，每一次调用递归的solve函数都可以生成n个子solve任务，这些任务可以放入队列中并行处理。使用`ConcurretMap`来解决多线程情况下的判重问题。另外一个有意思的结构是使用Latch来保存结果，因为主线程需要阻塞等待最后的结果，设定一个数量为1的`CountDownLatch`，只要有一个设定了结果，就打开门阀。不过这里存在一个问题，如果没有结果，主线程会一直等待。有几种处理方法：1）限时的等待 2）限定任务的数量，如果任务超过一定数量，停止运行 3）统计任务数量，如发现没有额外任务，标记搜索无结果。
 
 ```java
-public class PuzzleSolver<P,M> extends ConcurrentPuzzleSolver<P,M> { 
+public class PuzzleSolver<P,M> extends ConcurrentPuzzleSolver<P,M> {
     private final AtomicInteger taskCount = new AtomicInteger(0);
-    protected Runnable newTask(P p, M m, Node<P,M> n) { 
-        return new CountingSolverTask(p, m, n); 
+    protected Runnable newTask(P p, M m, Node<P,M> n) {
+        return new CountingSolverTask(p, m, n);
     }
-    
+
     class CountingSolverTask extends SolverTask {
-        CountingSolverTask(P pos, M move, Node<P, M> prev) { 
-            super(pos, move, prev); 
+        CountingSolverTask(P pos, M move, Node<P, M> prev) {
+            super(pos, move, prev);
 
             // 构造时候统计任务数量
-            taskCount.incrementAndGet(); 
-        } 
-        
-        public void run() { 
-            try { 
-                super.run(); 
-            } finally { 
+            taskCount.incrementAndGet();
+        }
+
+        public void run() {
+            try {
+                super.run();
+            } finally {
                 // 结束运行时候减少数量，并判定是否无解
-                if (taskCount.decrementAndGet() == 0) 
-                    solution.setValue(null); 
+                if (taskCount.decrementAndGet() == 0)
+                    solution.setValue(null);
             }
         }
     }
@@ -626,7 +628,8 @@ public void transferMoney(Account from, Account to, int amount) throws Insuffici
     }
 }
 ```
-看似所有的代码都按照from到to的方式加锁，但问题在于from和to依赖于调用者，完全存在同时调用了`transferMoney(A, B)`和`transferMoney(B, A)`的可能性。一种改进的措施是将**无序变有序**：
+
+看似所有代码都按照from到to的方式加锁，但问题在于from和to依赖于调用者，完全存在同时调用了`transferMoney(A, B)`和`transferMoney(B, A)`的可能性。一种改进的措施是将**无序变有序**：
 
 ```java
 private static final Object tieLock = new Object();
@@ -809,7 +812,7 @@ $$ Speedup \leqslant \frac{1}{F+\frac{(1-F)}{N}} $$
 
 ```java
 void testTakeBlocksWhenEmpty() {
-    final BoundedBuffer<Integer> bb = new BoundedBuffer<Integer>(10); 
+    final BoundedBuffer<Integer> bb = new BoundedBuffer<Integer>(10);
     Thread taker = new Thread() {
         public void run() {
             try {
@@ -847,36 +850,36 @@ void testTakeBlocksWhenEmpty() {
 
 ```java
 public class PutTakeTest {
-    private static final ExecutorService pool = Executors.newCachedThreadPool(); 
-    private final AtomicInteger putSum = new AtomicInteger(0); 
-    private final AtomicInteger takeSum = new AtomicInteger(0); 
-    private final CyclicBarrier barrier; 
-    private final BoundedBuffer<Integer> bb; 
+    private static final ExecutorService pool = Executors.newCachedThreadPool();
+    private final AtomicInteger putSum = new AtomicInteger(0);
+    private final AtomicInteger takeSum = new AtomicInteger(0);
+    private final CyclicBarrier barrier;
+    private final BoundedBuffer<Integer> bb;
     private final int nTrials, nPairs;
-    
-    public static void main(String[] args) { 
-        new PutTakeTest(10, 10, 100000).test(); 
-        pool.shutdown(); 
+
+    public static void main(String[] args) {
+        new PutTakeTest(10, 10, 100000).test();
+        pool.shutdown();
     }
-    
-    PutTakeTest(int capacity, int npairs, int ntrials) { 
-        this.bb = new BoundedBuffer<Integer>(capacity); 
-        this.nTrials = ntrials; 
-        this.nPairs = npairs; 
-        this.barrier = new CyclicBarrier(npairs * 2 + 1); 
+
+    PutTakeTest(int capacity, int npairs, int ntrials) {
+        this.bb = new BoundedBuffer<Integer>(capacity);
+        this.nTrials = ntrials;
+        this.nPairs = npairs;
+        this.barrier = new CyclicBarrier(npairs * 2 + 1);
     }
-    
+
     void test() {
-        try { 
-            for (int i = 0; i < nPairs; i++) { 
-                pool.execute(new Producer()); 
-                pool.execute(new Consumer()); 
-            } 
+        try {
+            for (int i = 0; i < nPairs; i++) {
+                pool.execute(new Producer());
+                pool.execute(new Consumer());
+            }
             barrier.await(); // wait for all threads to be ready
-            barrier.await(); // wait for all threads to finish 
-            assertEquals(putSum.get(), takeSum.get()); 
-        } catch (Exception e) { 
-            throw new RuntimeException(e); 
+            barrier.await(); // wait for all threads to finish
+            assertEquals(putSum.get(), takeSum.get());
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -887,7 +890,7 @@ public class PutTakeTest {
         return y;
     }
 
-    class Producer implements Runnable { 
+    class Producer implements Runnable {
         public void run() {
             try {
                 // 独立的随机数生成，而不是系统线程安全的RNG
@@ -907,7 +910,7 @@ public class PutTakeTest {
         }
     }
 
-    class Consumer implements Runnable { 
+    class Consumer implements Runnable {
         public void run() {
             try {
                 barrier.await();
@@ -955,7 +958,7 @@ public synchronized void transferCredits(Account from, Account to, int amount) {
     ```java
     // touch使用，但极低概率会进行I/O
     if (foo.x.hashCode() == System.nanoTime())
-         System.out.print(" ");       
+         System.out.print(" ");
     ```
 
 # 第十三章：显示锁
@@ -969,7 +972,7 @@ public synchronized void transferCredits(Account from, Account to, int amount) {
 3. 非块结构加锁。连锁式加锁（Hand-Over-Hand Locking）不是传统的块状加锁语义。
 
 4. 公平性。内置锁是非公平加锁，而ReentrantLock构造时可选择是否是公平锁。
-    
+
     在公平锁上，线程将按照它们发出的顺序来获得锁，但在非公平的锁上，则允许「插队」：当一个线程请求非公平锁时，如果在发出请求的同时该锁的状态变成可用，那么这个线程将跳过队列中所有的等待线程并获得这个锁。多数情况下，都应该使用非公平的锁。因为公平一定程度上会影响效率，因为将一个线程唤醒并执行是需要额外开销的，而非公平的插队使得当前线程立刻执行，效率更高。
 
 读写锁`ReentrantReadWriteLock`是一种扩展语义范畴的显示调用锁，对读和写分别进行加锁，更好地提高了**读多于写情况**下的并发性能。
@@ -1070,21 +1073,21 @@ AQS的获取和释放逻辑大致如下：
 
 ```java
 boolean acquire() throws InterruptedException {
-    while (state does not permit acquire) { 
-        if (blocking acquisition requested) { 
-            enqueue current thread if not already queued block current thread 
-        } 
-        else 
+    while (state does not permit acquire) {
+        if (blocking acquisition requested) {
+            enqueue current thread if not already queued block current thread
+        }
+        else
             return failure
-    } 
-    possibly update synchronization state dequeue thread if it was queued 
+    }
+    possibly update synchronization state dequeue thread if it was queued
     return success
 }
-    
+
 void release() {
-    update synchronization state 
-    if (new state may permit a blocked thread to acquire) 
-        unblock one or more queued threads 
+    update synchronization state
+    if (new state may permit a blocked thread to acquire)
+        unblock one or more queued threads
 }
 ```
 
@@ -1183,7 +1186,7 @@ java中CAS操作被封装在原子变量类中，可分为4组：标量类、更
 
 构建非阻塞算法的技巧在于：**将执行原子修改的范围缩小到单个变量上**。如果修改不成功，就不停尝试。但如果要同时原子地修改多个变量，算法将变得比较复杂。以非阻塞链表的push为例，在链表中插入一个元素，需要原子的修改两个引用：
 
-- P1: 当前尾结点的next设置为新节点 
+- P1: 当前尾结点的next设置为新节点
 - P2: 将新节点设置成尾结点。这种对多个变量进行修改的CAS算法，设计时有如下两个要点：
 
 - 要保证数据结构总是处于一致的状态。考虑当线程B到达时，发现线程A正在执行更新，那么线程B就不能立即开始执行自己的更新操作，而是等待A执行完成（通过CAS的状态比较），然后再执行B的逻辑。
@@ -1225,7 +1228,7 @@ public class LinkedQueue <E> {
             if (tailNext != null) {
                 tail.compareAndSet(curTail, tailNext);
                 continue;
-            } 
+            }
 
             // C：如果当前状态非常干净，那么执行步骤一，设定当前tail的下一个节点，CAS操作，保证只有一个线程可以将自己节点放到尾巴上
             if (curTail.next.compareAndSet(null, newNode)) {

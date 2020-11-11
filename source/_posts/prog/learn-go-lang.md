@@ -1172,6 +1172,11 @@ exit:
 	fmt.Printf("exit")
 ```
 
+参考：
+
+- [golang-select](https://draveness.me/golang/docs/part2-foundation/ch05-keyword/golang-select/)
+- [stackoverflow-timer-in-select-never-meet](https://stackoverflow.com/questions/37691887/why-does-time-after-never-fire-when-it-is-paired-with-a-ticker-in-a-select-block/62587485#62587485)
+
 ## go-land 技巧
 
 go-land有几个非常好用的技巧：
